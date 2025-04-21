@@ -1,4 +1,4 @@
-# Lebedev
+# [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&width=435&lines=Lebedev+linux)](https://git.io/typing-svg)
 
 Перед началой установки, нужно установить Linux Oracle на VirtualBox
 
