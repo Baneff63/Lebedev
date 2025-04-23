@@ -116,11 +116,86 @@
 
 • /mnt/common_volume/swarm/grafana/config/prometheus.yaml - исправить targets: на exporter:9100,
 
+## Grafana
+
+В меню выбираем вкладку Dashboards и создаём новую панель мониторинга.
+
+После этого ожидаем появления кнопки «Добавить визуализацию» и затем нажимаем «Настроить новый источник данных».
+
+Выбираем Prometheus и вводим следующую информацию:
+
+ Connection: http://prometheus:9090
+ Authentication: Basic authentication
+ User: admin
+ Password: admin
+
+После этого нажимаем «Сохранить и проверить» и ожидаем появления зелёной галочки.
+
+В меню выбираем вкладку Dashboards и создаём новую панель мониторинга.
+
+Ждём появления кнопки «Импорт панели мониторинга».
+
+Находим и импортируем панели мониторинга для популярных приложений на сайте grafana.com/dashboards: 1860.
+
+Выбираем Prometheus и нажимаем кнопку «Импорт».
+
+![image](https://github.com/user-attachments/assets/72c4e493-96d0-417a-b5f1-c9a151d3f1b6)
 
 
+## VictoriaMetrics
+
+Для начала изменим docker-compose.yaml
+
+1. `cd grafana_stack_for_docker`
+
+• команда cd grafana_stack_for_docker изменяет текущий рабочий каталог на каталог grafana_stack_for_docker.
+
+2. `sudo vi docker-compose.yaml`
+
+• команда sudo открывает файл docker-compose.yaml в редакторе vi с правами суперпользователя.
+
+![image](https://github.com/user-attachments/assets/1a957374-26c9-4b6f-96c1-0741d8d1b745)
+
+В самом текстовом редакторе после prometheus вставляем
+
+![image](https://github.com/user-attachments/assets/b25ebd84-0173-4e2c-9fe5-c94b7c290a37)
+
+Захом в connection
+там где мы писали http//:prometheus:9090 пишем http:victoriametrics:9090 И заменяем имя из "Prometheus-2" в "Vika"
+нажимаем на dashboards add visualition выбираем "Vika"
+снизу меняем на "code"
+Переходим в терминал и пишем
+
+3. `echo -e "# TYPE OILCOINT_metric1 gauge\nOILCOINT_metric1 0" | curl --data-binary @- http://localhost:8428/api/v1/import/prometheus  `
+
+• команда отправляет бинарные данные (например, метрики в формате Prometheus) на локальный сервер, который слушает на порту 8428.
+
+4. `curl -G 'http://localhost:8428/api/v1/query' --data-urlencode 'query=OILCOINT_metric1'`
+
+• команда делает запрос к API для получения данных по метрике OILCOINT_metric1
+
+• команда выводит текст, который может быть использован для определения метрики в формате, совместимом с Prometheus
+
+• команда выводит информацию о типе и значении этой метрики в формате, который может быть использован системой мониторинга Prometheus.
+
+![image](https://github.com/user-attachments/assets/6bb40402-315f-48b6-ad1f-5dcc5d9e9ba9)
 
 
+Значение 0 меняем на любое другое
 
+Копируем переменную OILCOINT_metric1 и вставляем в query
+
+Нажимаем run
+
+![image](https://github.com/user-attachments/assets/6c18f1af-bc71-4565-9f0d-9f5913526b8e)
+
+
+![image](https://github.com/user-attachments/assets/64e43147-811a-4c01-a9ff-21fd49da2b2e)
+
+
+Копируем переменную OILCOINT_metric1 и вставляем в code
+
+![image](https://github.com/user-attachments/assets/beaf6502-b9ee-4f12-bc76-8065324e78cc)
 
 
 
