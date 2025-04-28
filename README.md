@@ -122,12 +122,7 @@
 
 После этого ожидаем появления кнопки «Добавить визуализацию» и затем нажимаем «Настроить новый источник данных».
 
-Выбираем Prometheus и вводим следующую информацию:
-
- Connection: http://prometheus:9090
- Authentication: Basic authentication
- User: admin
- Password: admin
+Я  выбрал Windows, т.к Prometheus у меня не работает, но для наглядности использования подойдёт и Windows 
 
 После этого нажимаем «Сохранить и проверить» и ожидаем появления зелёной галочки.
 
@@ -135,11 +130,11 @@
 
 Ждём появления кнопки «Импорт панели мониторинга».
 
-Находим и импортируем панели мониторинга для популярных приложений на сайте grafana.com/dashboards: 1860.
+Находим и импортируем панели мониторинга для популярных приложений на сайте grafana.com/dashboards
 
-Выбираем Prometheus и нажимаем кнопку «Импорт».
+![image](https://github.com/user-attachments/assets/1d6bb7cf-4e2a-444f-b4f1-d727d8a6bedd)
 
-![image](https://github.com/user-attachments/assets/72c4e493-96d0-417a-b5f1-c9a151d3f1b6)
+![image](https://github.com/user-attachments/assets/dd0b7197-86ad-4624-a5d2-6d99c78e243d)
 
 
 ## VictoriaMetrics
