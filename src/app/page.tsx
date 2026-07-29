@@ -20,7 +20,6 @@ export default function Home() {
         <Hero />
         <Marquee />
         <About />
-        <Marquee reverse variant="accent" />
         <Marquee variant="outline" />
         <Work />
         <Marquee reverse />
