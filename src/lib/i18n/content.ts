@@ -9,6 +9,7 @@ export const content = {
     },
     nav: {
       about: "Обо мне",
+      philosophy: "Принципы",
       work: "Работы",
       contact: "Контакт",
     },
@@ -50,6 +51,33 @@ export const content = {
         items: ["FL Studio", "Cubase", "Waves", "Fabfilter"],
       },
     },
+    philosophy: {
+      label: "02 — Принципы",
+      headline: "Без манифестов.\nТолько то, что работает.",
+      side: "принципы",
+      items: [
+        {
+          num: "01",
+          title: "Простота — не упрощение",
+          body: "Убираю лишнее, пока не останется только то, что звучит и работает.",
+        },
+        {
+          num: "02",
+          title: "Стабильность важнее хайпа",
+          body: "Не гонюсь за трендами. Делаю так, чтобы результат держался каждый раз.",
+        },
+        {
+          num: "03",
+          title: "Инструменты — не цель",
+          body: "FL Studio, Cubase, плагины — средство. Считается только финальный микс.",
+        },
+        {
+          num: "04",
+          title: "Не удивляю — выполняю",
+          body: "Без лишнего шума вокруг процесса. Просто стабильно хороший результат.",
+        },
+      ],
+    },
     work: {
       label: "03 — Треки",
       headline: "Слушай, как\nзвучит результат.",
@@ -83,6 +111,7 @@ export const content = {
     },
     nav: {
       about: "About",
+      philosophy: "Principles",
       work: "Tracks",
       contact: "Contact",
     },
@@ -123,6 +152,33 @@ export const content = {
         label: "Stack",
         items: ["FL Studio", "Cubase", "Waves", "Fabfilter"],
       },
+    },
+    philosophy: {
+      label: "02 — Principles",
+      headline: "No manifestos.\nJust what works.",
+      side: "principles",
+      items: [
+        {
+          num: "01",
+          title: "Simplicity isn't dumbing down",
+          body: "I strip away until only what sounds and works remains.",
+        },
+        {
+          num: "02",
+          title: "Consistency beats hype",
+          body: "I don't chase trends. I deliver results that hold up every time.",
+        },
+        {
+          num: "03",
+          title: "Tools aren't the goal",
+          body: "FL Studio, Cubase, plugins — means. Only the final mix counts.",
+        },
+        {
+          num: "04",
+          title: "I don't impress — I deliver",
+          body: "No noise around the process. Just consistently solid output.",
+        },
+      ],
     },
     work: {
       label: "03 — Tracks",
