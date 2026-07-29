@@ -1,14 +1,14 @@
-import { promises as fs } from "fs";
-import path from "path";
+import { put, head } from "@vercel/blob";
 import { getDefaultSiteData, type SiteData } from "@/types/site";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "site.json");
+const BLOB_PATH = "site-data.json";
 
 export async function readSiteData(): Promise<SiteData> {
   try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
-    return JSON.parse(raw) as SiteData;
+    const blob = await head(BLOB_PATH);
+    const res = await fetch(blob.url, { cache: "no-store" });
+    if (!res.ok) throw new Error("fetch failed");
+    return (await res.json()) as SiteData;
   } catch {
     const defaults = getDefaultSiteData();
     await writeSiteData(defaults);
@@ -17,10 +17,10 @@ export async function readSiteData(): Promise<SiteData> {
 }
 
 export async function writeSiteData(data: SiteData): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
-}
-
-export function getUploadsDir() {
-  return path.join(process.cwd(), "public", "uploads", "audio");
+  await put(BLOB_PATH, JSON.stringify(data, null, 2), {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: "application/json",
+    allowOverwrite: true,
+  });
 }
