@@ -21,6 +21,5 @@ export async function writeSiteData(data: SiteData): Promise<void> {
     access: "public",
     addRandomSuffix: false,
     contentType: "application/json",
-    allowOverwrite: true,
   });
 }
