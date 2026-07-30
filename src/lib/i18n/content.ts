@@ -5,7 +5,7 @@ export const content = {
     meta: {
       title: "baneoff — сведение и мастеринг треков",
       description:
-        "Даниил Лебедев (baneoff) — инженер сведения и мастеринга. 6+ лет опыта, 20+ завершённых релизов для инди-артистов. Обсудим ваш трек.",
+        "Даниил Лебедев (baneoff) — инженер сведения и мастеринга. 6+ лет опыта, 20+ завершённых релизов для инди-артистов и игровых проектов. Обсудим ваш трек.",
     },
     nav: {
       about: "Обо мне",
@@ -27,10 +27,6 @@ export const content = {
       "без шума",
       "20+ релизов",
       "6 лет опыта",
-      "Serum",
-      "Arturia",
-      "Antares",
-      "Xpand",
     ],
     hero: {
       eyebrow: "Сведение и мастеринг",
@@ -38,7 +34,7 @@ export const content = {
       line2: "можно доверить",
       line3: "релиз.",
       subheadline:
-        "Свожу и мастерю треки для инди-артистов уже 6 лет. Чисто, стабильно, без лишнего шума в процессе.",
+        "Свожу и мастерю треки для инди-артистов и игровых проектов уже 6 лет. Чисто, стабильно, без лишнего шума в процессе.",
       ctaPrimary: "Обсудить проект",
       ctaSecondary: "Послушать работы",
       status: "открыт для проектов",
@@ -47,7 +43,7 @@ export const content = {
     about: {
       label: "01 — Обо мне",
       headline: "Свожу музыку.\nСлышу баланс.",
-      body: "Инженер сведения и мастеринга. Шесть лет в продакшене, больше двадцати завершённых проектов. Не гонюсь за трендами: делаю чисто, стабильно и без лишнего шума.",
+      body: "Инженер сведения и мастеринга. Шесть лет в продакшене, больше двадцати завершённых проектов — от инди-артистов до игровых саундтреков. Не гонюсь за трендами: делаю чисто, стабильно и без лишнего шума.",
       highlightsLabel: "Коротко",
       highlights: [
         "От демо до релиза — полный цикл сведения и мастеринга",
@@ -61,7 +57,7 @@ export const content = {
       ],
       tools: {
         label: "Инструменты",
-        items: ["FL Studio", "Cubase", "Waves", "Fabfilter", "Serum", "Xpand", "Antares", "Arturia"],
+        items: ["FL Studio", "Cubase", "Waves", "Fabfilter"],
       },
     },
     work: {
@@ -86,6 +82,24 @@ export const content = {
       email: "Или на почту",
       cursorLabel: "say hi",
       socialsLabel: "Соцсети и площадки",
+      analyzer: {
+        badge: "Бесплатный инструмент",
+        title: "Узнай BPM и тональность",
+        body: "Загрузи трек — определим темп и тональность прямо в браузере, ещё до того как обсудим сведение. Файл никуда не отправляется.",
+        dropTitle: "Перетащи файл сюда",
+        dropHint: "или нажми, чтобы выбрать · mp3, wav, m4a до 60 МБ",
+        analyzing: "Анализирую…",
+        bpmLabel: "Темп",
+        keyLabel: "Тональность",
+        major: "мажор",
+        minor: "минор",
+        confidenceLabel: "уверенность",
+        reset: "Загрузить другой файл",
+        ctaAfter: "Свести этот трек",
+        errorGeneric: "Не получилось прочитать файл. Попробуй mp3, wav или m4a.",
+        errorTooBig: "Файл больше 60 МБ — возьми отрывок покороче.",
+        privacyNote: "Обработка происходит локально в браузере — файл не покидает устройство.",
+      },
     },
     footer: {
       name: "Лебедев Даниил",
@@ -99,7 +113,7 @@ export const content = {
     meta: {
       title: "baneoff — mixing & mastering engineer",
       description:
-        "Daniil Lebedev (baneoff) — mixing & mastering engineer. 6+ years of experience, 20+ finished releases for indie artists. Let's talk about your track.",
+        "Daniil Lebedev (baneoff) — mixing & mastering engineer. 6+ years of experience, 20+ finished releases for indie artists and game projects. Let's talk about your track.",
     },
     nav: {
       about: "About",
@@ -176,6 +190,24 @@ export const content = {
       email: "Or send an email",
       cursorLabel: "say hi",
       socialsLabel: "Socials & platforms",
+      analyzer: {
+        badge: "Free tool",
+        title: "Find the BPM and key",
+        body: "Drop a track and get its tempo and key right in your browser — before we even talk mixing. Nothing gets uploaded anywhere.",
+        dropTitle: "Drop a file here",
+        dropHint: "or click to choose · mp3, wav, m4a up to 60MB",
+        analyzing: "Analyzing…",
+        bpmLabel: "Tempo",
+        keyLabel: "Key",
+        major: "major",
+        minor: "minor",
+        confidenceLabel: "confidence",
+        reset: "Analyze another file",
+        ctaAfter: "Mix this track",
+        errorGeneric: "Couldn't read that file. Try mp3, wav, or m4a.",
+        errorTooBig: "File is over 60MB — try a shorter clip.",
+        privacyNote: "Processing happens locally in your browser — the file never leaves your device.",
+      },
     },
     footer: {
       name: "Daniil Lebedev",

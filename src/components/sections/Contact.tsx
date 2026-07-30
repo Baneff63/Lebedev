@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLocale } from "@/context/LocaleContext";
 import { SectionNumber } from "@/components/effects/SectionNumber";
 import { Magnetic } from "@/components/ui/Magnetic";
+import { TrackAnalyzer } from "./TrackAnalyzer";
 
 function IconTelegram() {
   return (
@@ -70,6 +71,14 @@ export function Contact() {
         opacity: 0,
         duration: 0.5,
         stagger: 0.06,
+        ease: "power3.out",
+      });
+
+      gsap.from(".analyzer-card", {
+        scrollTrigger: { trigger: ".analyzer-card", start: "top 85%" },
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
         ease: "power3.out",
       });
     }, sectionRef);
@@ -179,6 +188,10 @@ export function Contact() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="relative mx-auto mt-20 w-full max-w-[1440px] border-t border-ink/8 pt-16 md:mt-28 md:pt-20">
+        <TrackAnalyzer />
       </div>
     </section>
   );

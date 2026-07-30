@@ -28,8 +28,6 @@ type PlayerContextValue = {
   seek: (time: number) => void;
   setVolume: (value: number) => void;
   playTrack: (index: number) => void;
-  /** Returns the live AnalyserNode for the current track, or null if audio hasn't started yet. */
-  getAnalyser: () => AnalyserNode | null;
 };
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -48,9 +46,6 @@ type PlayerProviderProps = {
 
 export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -71,54 +66,9 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
     tracks.length === 0 ? 0 : Math.min(currentIndex, tracks.length - 1);
   const currentTrack = tracks[safeIndex] ?? null;
 
-  // Lazily creates the AudioContext/AnalyserNode graph. Must be called from
-  // inside a user gesture (click) the first time, since browsers block
-  // AudioContext creation/resume otherwise.
-  const ensureAnalyser = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio || typeof window === "undefined") return null;
-
-    if (!audioCtxRef.current) {
-      const Ctx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext })
-          .webkitAudioContext;
-      if (!Ctx) return null;
-
-      try {
-        const ctx = new Ctx();
-        const source = ctx.createMediaElementSource(audio);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.8;
-        source.connect(analyser);
-        analyser.connect(ctx.destination); // keep audio audible
-        audioCtxRef.current = ctx;
-        analyserRef.current = analyser;
-        sourceRef.current = source;
-      } catch {
-        // createMediaElementSource can only be called once per element;
-        // if this ever throws, fall back gracefully to no analyser.
-        return null;
-      }
-    }
-
-    if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume().catch(() => {});
-    }
-
-    return analyserRef.current;
-  }, []);
-
-  const getAnalyser = useCallback(() => analyserRef.current, []);
-
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "metadata";
-    // Required so the AnalyserNode can read frequency data from
-    // cross-origin sources (Vercel Blob). The blob storage serves
-    // permissive CORS headers by default, so this is safe.
-    audio.crossOrigin = "anonymous";
     audio.volume = volumeRef.current;
     audioRef.current = audio;
 
@@ -142,13 +92,6 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       audio.removeEventListener("durationchange", onMeta);
       audio.removeEventListener("ended", onEnd);
       audioRef.current = null;
-
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close().catch(() => {});
-        audioCtxRef.current = null;
-        analyserRef.current = null;
-        sourceRef.current = null;
-      }
     };
     // The <audio> element is only recreated when the track list itself
     // changes. Volume changes are applied via the effect below, without
@@ -185,24 +128,15 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  const play = useCallback(() => {
-    ensureAnalyser();
-    setIsPlaying(true);
-  }, [ensureAnalyser]);
-
+  const play = useCallback(() => setIsPlaying(true), []);
   const pause = useCallback(() => setIsPlaying(false), []);
-
-  const toggle = useCallback(() => {
-    ensureAnalyser();
-    setIsPlaying((p) => !p);
-  }, [ensureAnalyser]);
+  const toggle = useCallback(() => setIsPlaying((p) => !p), []);
 
   const next = useCallback(() => {
     if (!tracks.length) return;
-    ensureAnalyser();
     setCurrentIndex((i) => (i + 1) % tracks.length);
     setIsPlaying(true);
-  }, [tracks.length, ensureAnalyser]);
+  }, [tracks.length]);
 
   const prev = useCallback(() => {
     const audio = audioRef.current;
@@ -212,10 +146,9 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       return;
     }
     if (!tracks.length) return;
-    ensureAnalyser();
     setCurrentIndex((i) => (i - 1 + tracks.length) % tracks.length);
     setIsPlaying(true);
-  }, [tracks.length, ensureAnalyser]);
+  }, [tracks.length]);
 
   const seek = useCallback((time: number) => {
     const audio = audioRef.current;
@@ -231,11 +164,10 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
   const playTrack = useCallback(
     (index: number) => {
       if (index < 0 || index >= tracks.length) return;
-      ensureAnalyser();
       setCurrentIndex(index);
       setIsPlaying(true);
     },
-    [tracks.length, ensureAnalyser],
+    [tracks.length],
   );
 
   const value = useMemo(
@@ -255,7 +187,6 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       seek,
       setVolume,
       playTrack,
-      getAnalyser,
     }),
     [
       tracks,
@@ -273,7 +204,6 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       seek,
       setVolume,
       playTrack,
-      getAnalyser,
     ],
   );
 

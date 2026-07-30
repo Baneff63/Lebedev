@@ -71,15 +71,6 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
     },
   },
-  verification: {
-    // Вставьте сюда код подтверждения из кабинета Яндекс Вебмастера
-    // (Webmaster → Добавить сайт → способ подтверждения «Мета-тег»).
-    // Нужен только content без самого <meta> тега, например:
-    // other: { "yandex-verification": "a1b2c3d4e5f6g7h8" },
-    other: {
-      "yandex-verification": "yandex-verification\" content=\"663c91d9a2f58186",
-    },
-  },
 };
 
 export const viewport: Viewport = {
