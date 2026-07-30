@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2">
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/admin/upload/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/admin/upload/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/Portfolio.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/Portfolio.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/i18n/content.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/i18n/content.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/site-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/site-data.ts" afterDir="false" />
-    </list>
+    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.1 fix hero" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -71,7 +63,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1785396947527</updated>
-      <workItem from="1785396954937" duration="1116000" />
+      <workItem from="1785396954937" duration="1656000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -81,7 +73,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785397396023</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="patch 2.1 eq  upd">
+      <option name="closed" value="true" />
+      <created>1785398649539</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1785398649539</updated>
+    </task>
+    <task id="LOCAL-00003" summary="patch 2.1 fix hero">
+      <option name="closed" value="true" />
+      <created>1785399171833</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1785399171833</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -100,6 +108,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="patch 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="patch 2" />
+    <MESSAGE value="patch 2.1 eq  upd" />
+    <MESSAGE value="patch 2.1 fix hero" />
+    <option name="LAST_COMMIT_MESSAGE" value="patch 2.1 fix hero" />
   </component>
 </project>
