@@ -139,7 +139,7 @@ export function Hero() {
                   type="button"
                   onClick={() => scrollToId("contact")}
                   data-cursor
-                  className="inline-flex items-center gap-3 rounded-full border border-ink bg-ink px-7 py-3.5 text-[12px] uppercase tracking-[0.16em] text-paper transition-colors hover:border-accent hover:bg-accent"
+                  className="inline-flex h-[52px] items-center gap-3 rounded-full border border-ink bg-ink px-7 text-[12px] uppercase tracking-[0.16em] text-paper transition-colors hover:border-accent hover:bg-accent"
                 >
                   {t.hero.ctaPrimary}
                 </button>
@@ -150,9 +150,9 @@ export function Hero() {
                 onClick={() => scrollToId("work")}
                 data-cursor
                 data-cursor-label="play"
-                className="hero-cta group inline-flex items-center gap-3 text-[12px] uppercase tracking-[0.16em] text-ink"
+                className="hero-cta group inline-flex h-[52px] items-center gap-3 text-[12px] uppercase tracking-[0.16em] text-ink"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/20 transition-colors group-hover:border-accent group-hover:text-accent">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ink/20 transition-colors group-hover:border-accent group-hover:text-accent">
                   <svg width="9" height="11" viewBox="0 0 9 11" fill="currentColor" aria-hidden>
                     <path d="M0.5 0.5l8 5-8 5V0.5z" />
                   </svg>
