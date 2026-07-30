@@ -5,7 +5,7 @@ export const content = {
     meta: {
       title: "baneoff — сведение и мастеринг треков",
       description:
-        "Даниил Лебедев (baneoff) — инженер сведения и мастеринга. 6+ лет опыта, 20+ завершённых релизов для инди-артистов и игровых проектов. Обсудим ваш трек.",
+        "Даниил Лебедев (baneoff) — инженер сведения и мастеринга. 6+ лет опыта, 20+ завершённых релизов для инди-артистов. Обсудим ваш трек.",
     },
     nav: {
       about: "Обо мне",
@@ -95,7 +95,7 @@ export const content = {
     meta: {
       title: "baneoff — mixing & mastering engineer",
       description:
-        "Daniil Lebedev (baneoff) — mixing & mastering engineer. 6+ years of experience, 20+ finished releases for indie artists and game projects. Let's talk about your track.",
+        "Daniil Lebedev (baneoff) — mixing & mastering engineer. 6+ years of experience, 20+ finished releases for indie artists. Let's talk about your track.",
     },
     nav: {
       about: "About",
