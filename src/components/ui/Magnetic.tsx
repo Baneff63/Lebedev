@@ -32,7 +32,13 @@ export function Magnetic({ children, className, strength = 0.35 }: MagneticProps
       className={className}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
-      style={{ transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
+      style={{
+        transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        // inline-flex вместо обычного div: убирает "фантомный" отступ
+        // строчного контекста, из-за которого кнопка внутри Magnetic
+        // визуально проваливалась ниже соседних inline-flex кнопок.
+        display: "inline-flex",
+      }}
     >
       {children}
     </div>

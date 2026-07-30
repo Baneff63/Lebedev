@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLocale } from "@/context/LocaleContext";
@@ -21,21 +21,6 @@ function IconPause() {
     <svg width="11" height="13" viewBox="0 0 11 13" fill="currentColor" aria-hidden>
       <rect x="0.5" y="0.5" width="3.2" height="12" />
       <rect x="7.3" y="0.5" width="3.2" height="12" />
-    </svg>
-  );
-}
-
-function IconChevron({ direction }: { direction: "left" | "right" }) {
-  return (
-    <svg
-      width="8"
-      height="13"
-      viewBox="0 0 8 13"
-      fill="none"
-      aria-hidden
-      style={{ transform: direction === "left" ? "scaleX(-1)" : undefined }}
-    >
-      <path d="M1 1l5.5 5.5L1 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -72,10 +57,27 @@ const PLATFORM_LABELS: Record<string, string> = {
 
 const EQ_BAR_COUNT = 20;
 
-/** Animated bars inside a card's cover — idle & subtle when paused, alive when the track is playing. */
-function CardEqualizer({ playing, seed }: { playing: boolean; seed: number }) {
+/**
+ * Animated bars inside a card's cover.
+ * - Not playing: gentle deterministic "idle" shape per card.
+ * - Playing + active card: driven by the real AnalyserNode frequency data
+ *   of the currently playing track (low frequencies get more bars, like a
+ *   real equalizer).
+ * - Playing + not active (shouldn't really happen, kept as safety net):
+ *   falls back to the old pseudo-random animation.
+ */
+function CardEqualizer({
+  playing,
+  seed,
+  active,
+}: {
+  playing: boolean;
+  seed: number;
+  active: boolean;
+}) {
   const barsRef = useRef<(HTMLDivElement | null)[]>([]);
   const rafRef = useRef(0);
+  const { getAnalyser } = usePlayer();
 
   // Deterministic "idle" heights per card so it still reads as a waveform, not a flat line.
   const idleHeights = useMemo(
@@ -97,9 +99,40 @@ function CardEqualizer({ playing, seed }: { playing: boolean; seed: number }) {
       return;
     }
 
-    const targets = [...idleHeights];
+    const analyser = active ? getAnalyser() : null;
     const current = [...idleHeights];
 
+    if (analyser) {
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      // Ignore the very top of the spectrum — it's almost always silent
+      // for music and just makes the bars look dead on the right side.
+      const usableBins = Math.max(1, Math.floor(analyser.frequencyBinCount * 0.6));
+
+      const tick = () => {
+        analyser.getByteFrequencyData(data);
+        for (let i = 0; i < EQ_BAR_COUNT; i++) {
+          // Exponential mapping: more bars sample the low/mid frequencies,
+          // matching how a real audio equalizer is laid out.
+          const bin = Math.min(
+            usableBins - 1,
+            Math.floor(Math.pow(i / EQ_BAR_COUNT, 1.6) * usableBins),
+          );
+          const raw = data[bin] / 255;
+          const target = Math.min(1, 0.08 + raw * 1.15);
+          current[i] += (target - current[i]) * 0.35;
+          const el = barsRef.current[i];
+          if (el) el.style.transform = `scaleY(${current[i]})`;
+        }
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(rafRef.current);
+    }
+
+    // Fallback: analyser not ready yet (e.g. first frame before the
+    // AudioContext resumes) — keep the old pseudo-random animation so
+    // there's no visible flash of a static bar.
+    const targets = [...idleHeights];
     const tick = () => {
       for (let i = 0; i < EQ_BAR_COUNT; i++) {
         if (Math.random() > 0.8) {
@@ -115,7 +148,7 @@ function CardEqualizer({ playing, seed }: { playing: boolean; seed: number }) {
     rafRef.current = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(rafRef.current);
-  }, [playing, idleHeights]);
+  }, [playing, active, idleHeights, getAnalyser]);
 
   return (
     <div className="absolute inset-0 flex items-end justify-center gap-[3px] px-5 pb-5" aria-hidden>
@@ -147,35 +180,7 @@ export function Portfolio() {
     toggle,
   } = usePlayer();
   const sectionRef = useRef<HTMLElement>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const [durations, setDurations] = useState<Record<string, number>>({});
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-
-  const updateArrows = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setCanPrev(el.scrollLeft > 4);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }, []);
-
-  useEffect(() => {
-    updateArrows();
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", updateArrows, { passive: true });
-    window.addEventListener("resize", updateArrows);
-    return () => {
-      el.removeEventListener("scroll", updateArrows);
-      window.removeEventListener("resize", updateArrows);
-    };
-  }, [updateArrows, tracks.length]);
-
-  const scrollByPage = (dir: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
-  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -266,9 +271,10 @@ export function Portfolio() {
     >
       <SectionNumber num="02" className="top-12 right-4 md:right-10" />
 
-      <div className="mx-auto w-full max-w-[1440px]">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:gap-8">
-          <div className="md:max-w-[380px]">
+      <div className="relative mx-auto w-full max-w-[1440px]">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:items-start md:gap-8">
+          {/* Left column: intro text — stays put while cards live on the right */}
+          <div className="md:sticky md:top-32 md:col-span-4">
             <p className="text-[11px] uppercase tracking-[0.22em] text-muted">
               {t.work.label}
             </p>
@@ -301,44 +307,15 @@ export function Portfolio() {
             </div>
           </div>
 
-          {tracks.length > 0 && (
-            <div className="hidden shrink-0 items-center gap-2 md:flex">
-              <button
-                type="button"
-                onClick={() => scrollByPage(-1)}
-                disabled={!canPrev}
-                data-cursor
-                aria-label="prev"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/15 text-ink transition-colors hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-25"
-              >
-                <IconChevron direction="left" />
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollByPage(1)}
-                disabled={!canNext}
-                data-cursor
-                aria-label="next"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/15 text-ink transition-colors hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-25"
-              >
-                <IconChevron direction="right" />
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-10">
-          {tracks.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-ink/12 py-16 text-center">
-              <p className="font-display text-xl italic text-muted">{t.work.emptyTitle}</p>
-              <p className="mt-2 text-[13px] text-muted/70">{t.work.emptyBody}</p>
-            </div>
-          ) : (
-            <>
-              <div
-                ref={scrollerRef}
-                className="work-scroller no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-2 md:mx-0 md:px-0"
-              >
+          {/* Right column: track cards */}
+          <div className="md:col-span-8">
+            {tracks.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-ink/12 py-16 text-center">
+                <p className="font-display text-xl italic text-muted">{t.work.emptyTitle}</p>
+                <p className="mt-2 text-[13px] text-muted/70">{t.work.emptyBody}</p>
+              </div>
+            ) : (
+              <div className="work-scroller grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {tracks.map((track, i) => {
                   const active = i === currentIndex;
                   const activePlaying = active && isPlaying;
@@ -353,10 +330,7 @@ export function Portfolio() {
                     : [];
 
                   return (
-                    <TiltCard
-                      key={track.id}
-                      className="work-card w-[78vw] shrink-0 snap-start sm:w-[300px]"
-                    >
+                    <TiltCard key={track.id} className="work-card w-full">
                       <div
                         className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
                           active
@@ -370,7 +344,7 @@ export function Portfolio() {
                             background: "linear-gradient(160deg, #211e1a 0%, #131110 100%)",
                           }}
                         >
-                          <CardEqualizer playing={activePlaying} seed={i + 1} />
+                          <CardEqualizer playing={activePlaying} seed={i + 1} active={active} />
                           <div
                             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
                             aria-hidden
@@ -458,13 +432,8 @@ export function Portfolio() {
                   );
                 })}
               </div>
-
-              {/* Mobile: swipe hint instead of arrow buttons (arrows are hidden below md). */}
-              <p className="mt-4 text-center text-[10px] uppercase tracking-[0.2em] text-muted/50 md:hidden">
-                ← swipe →
-              </p>
-            </>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </section>

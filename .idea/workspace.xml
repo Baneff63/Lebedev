@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.1 fix hero" />
+    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.1 web-master">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yandex_663c91d9a2f58186.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/yandex_663c91d9a2f58186.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -39,6 +42,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
+    "last_opened_file_path": "H:/lebedev",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -47,6 +51,14 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="H:\lebedev" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="H:\lebedev\public" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -63,7 +75,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1785396947527</updated>
-      <workItem from="1785396954937" duration="1656000" />
+      <workItem from="1785396954937" duration="2602000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -89,7 +101,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785399171833</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="patch 2.1 fix hero">
+      <option name="closed" value="true" />
+      <created>1785399245135</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1785399245135</updated>
+    </task>
+    <task id="LOCAL-00005" summary="patch 2.1 web-master">
+      <option name="closed" value="true" />
+      <created>1785399394769</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1785399394769</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -110,6 +138,7 @@
     <MESSAGE value="patch 2" />
     <MESSAGE value="patch 2.1 eq  upd" />
     <MESSAGE value="patch 2.1 fix hero" />
-    <option name="LAST_COMMIT_MESSAGE" value="patch 2.1 fix hero" />
+    <MESSAGE value="patch 2.1 web-master" />
+    <option name="LAST_COMMIT_MESSAGE" value="patch 2.1 web-master" />
   </component>
 </project>
