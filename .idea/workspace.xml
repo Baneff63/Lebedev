@@ -1,85 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2">
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/file.svg" beforeDir="false" afterPath="$PROJECT_DIR$/public/file.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/globe.svg" beforeDir="false" afterPath="$PROJECT_DIR$/public/globe.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/next.svg" beforeDir="false" afterPath="$PROJECT_DIR$/public/next.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/vercel.svg" beforeDir="false" afterPath="$PROJECT_DIR$/public/vercel.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/window.svg" beforeDir="false" afterPath="$PROJECT_DIR$/public/window.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/admin/page.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/api/admin/content/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/api/admin/login/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/api/admin/logout/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/api/admin/session/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/api/admin/upload/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/api/content/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/globals.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/layout.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/app/page.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/admin/AdminDashboard.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/effects/AudioVisualizer.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/effects/Crosshair.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/effects/GlobalEffects.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/effects/Marquee.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/effects/SectionNumber.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/effects/StudioHUD.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/effects/VerticalLabel.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/layout/Footer.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/layout/Header.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/player/FixedPlayer.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/providers/Providers.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/providers/SmoothScroll.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/sections/About.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/sections/Contact.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/sections/Hero.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/sections/Philosophy.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/sections/Work.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/CustomCursor.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/LanguageToggle.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/LiveClock.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/Loader.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/Magnetic.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/ScrambleText.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/StatCounter.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/ThemeScript.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/ThemeToggle.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/components/ui/TiltCard.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/context/LocaleContext.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/context/PlayerContext.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/lib/auth.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/lib/i18n/content.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/lib/site-data.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/lib/theme.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/src/types/site.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/admin/upload/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/admin/upload/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/favicon.ico" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/admin/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/AdminDashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/layout/Footer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/Footer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/layout/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/Header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/About.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/About.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/Contact.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/Contact.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/Hero.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/Hero.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/Philosophy.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/Work.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/Loader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/Loader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/PlayerContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PlayerContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/sections/Portfolio.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/Portfolio.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/i18n/content.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/i18n/content.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/site-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/site-data.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/site.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/site.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,7 +48,9 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
@@ -137,11 +71,35 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1785396947527</updated>
-      <workItem from="1785396954937" duration="290000" />
+      <workItem from="1785396954937" duration="1116000" />
     </task>
+    <task id="LOCAL-00001" summary="patch 2">
+      <option name="closed" value="true" />
+      <created>1785397396023</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1785397396023</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="patch 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="patch 2" />
   </component>
 </project>

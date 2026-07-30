@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLocale } from "@/context/LocaleContext";
@@ -21,6 +21,21 @@ function IconPause() {
     <svg width="11" height="13" viewBox="0 0 11 13" fill="currentColor" aria-hidden>
       <rect x="0.5" y="0.5" width="3.2" height="12" />
       <rect x="7.3" y="0.5" width="3.2" height="12" />
+    </svg>
+  );
+}
+
+function IconChevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      width="8"
+      height="13"
+      viewBox="0 0 8 13"
+      fill="none"
+      aria-hidden
+      style={{ transform: direction === "left" ? "scaleX(-1)" : undefined }}
+    >
+      <path d="M1 1l5.5 5.5L1 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -55,6 +70,71 @@ const PLATFORM_LABELS: Record<string, string> = {
   soundcloud: "SoundCloud",
 };
 
+const EQ_BAR_COUNT = 20;
+
+/** Animated bars inside a card's cover — idle & subtle when paused, alive when the track is playing. */
+function CardEqualizer({ playing, seed }: { playing: boolean; seed: number }) {
+  const barsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const rafRef = useRef(0);
+
+  // Deterministic "idle" heights per card so it still reads as a waveform, not a flat line.
+  const idleHeights = useMemo(
+    () =>
+      Array.from({ length: EQ_BAR_COUNT }, (_, i) => {
+        const v = Math.abs(Math.sin(seed * 12.9898 + i * 4.233));
+        return 0.12 + v * 0.28;
+      }),
+    [seed],
+  );
+
+  useEffect(() => {
+    cancelAnimationFrame(rafRef.current);
+
+    if (!playing) {
+      barsRef.current.forEach((el, i) => {
+        if (el) el.style.transform = `scaleY(${idleHeights[i]})`;
+      });
+      return;
+    }
+
+    const targets = [...idleHeights];
+    const current = [...idleHeights];
+
+    const tick = () => {
+      for (let i = 0; i < EQ_BAR_COUNT; i++) {
+        if (Math.random() > 0.8) {
+          const center = Math.abs(i - EQ_BAR_COUNT / 2) / (EQ_BAR_COUNT / 2);
+          targets[i] = 0.2 + Math.random() * 0.8 * (1 - center * 0.35);
+        }
+        current[i] += (targets[i] - current[i]) * 0.25;
+        const el = barsRef.current[i];
+        if (el) el.style.transform = `scaleY(${current[i]})`;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [playing, idleHeights]);
+
+  return (
+    <div className="absolute inset-0 flex items-end justify-center gap-[3px] px-5 pb-5" aria-hidden>
+      {idleHeights.map((h, i) => (
+        <div
+          key={i}
+          ref={(el) => {
+            barsRef.current[i] = el;
+          }}
+          className={`w-full origin-bottom rounded-full transition-colors duration-300 ${
+            playing ? "bg-accent" : "bg-on-dark/25"
+          }`}
+          style={{ height: "100%", transform: `scaleY(${h})` }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function Portfolio() {
   const { t } = useLocale();
   const {
@@ -67,7 +147,35 @@ export function Portfolio() {
     toggle,
   } = usePlayer();
   const sectionRef = useRef<HTMLElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const [durations, setDurations] = useState<Record<string, number>>({});
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const updateArrows = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setCanPrev(el.scrollLeft > 4);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    updateArrows();
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateArrows, { passive: true });
+    window.addEventListener("resize", updateArrows);
+    return () => {
+      el.removeEventListener("scroll", updateArrows);
+      window.removeEventListener("resize", updateArrows);
+    };
+  }, [updateArrows, tracks.length]);
+
+  const scrollByPage = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
+  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -98,11 +206,11 @@ export function Portfolio() {
       });
 
       gsap.from(".work-card", {
-        scrollTrigger: { trigger: ".work-grid", start: "top 78%" },
+        scrollTrigger: { trigger: ".work-scroller", start: "top 78%" },
         y: 40,
         opacity: 0,
         duration: 0.7,
-        stagger: 0.1,
+        stagger: 0.08,
         ease: "power3.out",
       });
     }, sectionRef);
@@ -110,7 +218,7 @@ export function Portfolio() {
     return () => ctx.revert();
   }, [t, tracks.length]);
 
-  // Preload metadata for every track so we can show a duration in the list.
+  // Preload metadata for every track so we can show a duration in the card.
   useEffect(() => {
     let cancelled = false;
     const probes: HTMLAudioElement[] = [];
@@ -159,8 +267,8 @@ export function Portfolio() {
       <SectionNumber num="02" className="top-12 right-4 md:right-10" />
 
       <div className="mx-auto w-full max-w-[1440px]">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-8">
-          <div className="md:col-span-5">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:gap-8">
+          <div className="md:max-w-[380px]">
             <p className="text-[11px] uppercase tracking-[0.22em] text-muted">
               {t.work.label}
             </p>
@@ -193,16 +301,44 @@ export function Portfolio() {
             </div>
           </div>
 
-          <div className="md:col-span-7">
-            {tracks.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-ink/12 py-16 text-center">
-                <p className="font-display text-xl italic text-muted">
-                  {t.work.emptyTitle}
-                </p>
-                <p className="mt-2 text-[13px] text-muted/70">{t.work.emptyBody}</p>
-              </div>
-            ) : (
-              <div className="work-grid grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {tracks.length > 0 && (
+            <div className="hidden shrink-0 items-center gap-2 md:flex">
+              <button
+                type="button"
+                onClick={() => scrollByPage(-1)}
+                disabled={!canPrev}
+                data-cursor
+                aria-label="prev"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/15 text-ink transition-colors hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-25"
+              >
+                <IconChevron direction="left" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollByPage(1)}
+                disabled={!canNext}
+                data-cursor
+                aria-label="next"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/15 text-ink transition-colors hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-25"
+              >
+                <IconChevron direction="right" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-10">
+          {tracks.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-ink/12 py-16 text-center">
+              <p className="font-display text-xl italic text-muted">{t.work.emptyTitle}</p>
+              <p className="mt-2 text-[13px] text-muted/70">{t.work.emptyBody}</p>
+            </div>
+          ) : (
+            <>
+              <div
+                ref={scrollerRef}
+                className="work-scroller no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-2 md:mx-0 md:px-0"
+              >
                 {tracks.map((track, i) => {
                   const active = i === currentIndex;
                   const activePlaying = active && isPlaying;
@@ -217,7 +353,10 @@ export function Portfolio() {
                     : [];
 
                   return (
-                    <TiltCard key={track.id} className="work-card">
+                    <TiltCard
+                      key={track.id}
+                      className="work-card w-[78vw] shrink-0 snap-start sm:w-[300px]"
+                    >
                       <div
                         className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
                           active
@@ -226,9 +365,17 @@ export function Portfolio() {
                         }`}
                       >
                         <div
-                          className={`relative flex h-32 items-end justify-between p-4 work-blur-${i % 4}`}
+                          className="relative flex h-32 items-end justify-between overflow-hidden p-4"
+                          style={{
+                            background: "linear-gradient(160deg, #211e1a 0%, #131110 100%)",
+                          }}
                         >
-                          <span className="font-display text-2xl text-on-dark/70 tabular-nums">
+                          <CardEqualizer playing={activePlaying} seed={i + 1} />
+                          <div
+                            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
+                            aria-hidden
+                          />
+                          <span className="relative z-10 font-display text-2xl text-on-dark/70 tabular-nums">
                             {String(i + 1).padStart(2, "0")}
                           </span>
                           <button
@@ -238,7 +385,7 @@ export function Portfolio() {
                             data-cursor-label={
                               activePlaying ? t.work.cursorPause : t.work.cursorPlay
                             }
-                            className="flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
+                            className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
                           >
                             {activePlaying ? <IconPause /> : <IconPlay />}
                           </button>
@@ -311,8 +458,13 @@ export function Portfolio() {
                   );
                 })}
               </div>
-            )}
-          </div>
+
+              {/* Mobile: swipe hint instead of arrow buttons (arrows are hidden below md). */}
+              <p className="mt-4 text-center text-[10px] uppercase tracking-[0.2em] text-muted/50 md:hidden">
+                ← swipe →
+              </p>
+            </>
+          )}
         </div>
       </div>
     </section>

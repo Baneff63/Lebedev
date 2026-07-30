@@ -264,6 +264,15 @@ html.custom-cursor-active * {
   accent-color: var(--accent);
 }
 
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .admin-input {
   width: 100%;
   border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
