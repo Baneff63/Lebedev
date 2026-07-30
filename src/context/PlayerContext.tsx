@@ -28,6 +28,7 @@ type PlayerContextValue = {
   seek: (time: number) => void;
   setVolume: (value: number) => void;
   playTrack: (index: number) => void;
+  getAnalyser: () => AnalyserNode | null;
 };
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -46,6 +47,9 @@ type PlayerProviderProps = {
 
 export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -70,7 +74,33 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
     const audio = new Audio();
     audio.preload = "metadata";
     audio.volume = volumeRef.current;
+    audio.crossOrigin = "anonymous";
     audioRef.current = audio;
+
+    // Web Audio analyser, привязан к этому <audio>. Нужен только для
+    // эквалайзера на карточках в Portfolio; если недоступен — плеер
+    // всё равно продолжает работать, просто карточки играют idle-анимацию.
+    try {
+      const AudioContextCtor =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      const audioCtx = new AudioContextCtor();
+      const source = audioCtx.createMediaElementSource(audio);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      audioCtxRef.current = audioCtx;
+      sourceRef.current = source;
+      analyserRef.current = analyser;
+    } catch {
+      audioCtxRef.current = null;
+      sourceRef.current = null;
+      analyserRef.current = null;
+    }
 
     const onTime = () => setCurrentTime(audio.currentTime);
     const onMeta = () => setDuration(audio.duration || 0);
@@ -92,11 +122,14 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       audio.removeEventListener("durationchange", onMeta);
       audio.removeEventListener("ended", onEnd);
       audioRef.current = null;
+
+      sourceRef.current?.disconnect();
+      analyserRef.current?.disconnect();
+      audioCtxRef.current?.close().catch(() => {});
+      sourceRef.current = null;
+      analyserRef.current = null;
+      audioCtxRef.current = null;
     };
-    // The <audio> element is only recreated when the track list itself
-    // changes. Volume changes are applied via the effect below, without
-    // tearing down and recreating the element (that was previously causing
-    // playback to stop whenever the volume slider moved).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tracks.length]);
 
@@ -110,6 +143,7 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
     setDuration(0);
 
     if (isPlayingRef.current) {
+      audioCtxRef.current?.resume().catch(() => {});
       audio.play().catch(() => setIsPlaying(false));
     }
   }, [currentTrack?.id, currentTrack?.src]);
@@ -118,6 +152,7 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
     const audio = audioRef.current;
     if (!audio) return;
     if (isPlaying && currentTrack) {
+      audioCtxRef.current?.resume().catch(() => {});
       audio.play().catch(() => setIsPlaying(false));
     } else {
       audio.pause();
@@ -170,6 +205,8 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
     [tracks.length],
   );
 
+  const getAnalyser = useCallback(() => analyserRef.current, []);
+
   const value = useMemo(
     () => ({
       tracks,
@@ -187,6 +224,7 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       seek,
       setVolume,
       playTrack,
+      getAnalyser,
     }),
     [
       tracks,
@@ -204,6 +242,7 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       seek,
       setVolume,
       playTrack,
+      getAnalyser,
     ],
   );
 
