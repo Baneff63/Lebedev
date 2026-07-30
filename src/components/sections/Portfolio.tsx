@@ -434,110 +434,125 @@ export function Portfolio() {
                           : [];
 
                         return (
-                          <TiltCard key={track.id} className="work-card w-full">
-                            <div
-                              className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
-                                active
-                                  ? "border-accent/50 bg-accent/[0.04]"
-                                  : "border-ink/10 hover:border-ink/25"
-                              }`}
-                            >
+                          /*
+                            IMPORTANT: the GSAP entrance animation
+                            (".work-card") lives on THIS plain wrapper div,
+                            not on TiltCard itself. TiltCard writes to its
+                            own inner div's `transform` on every
+                            mousemove/mouseleave (the tilt effect) — if the
+                            GSAP-animated class had been on that same node,
+                            the two systems would fight over the same inline
+                            `transform`, leaving the card visually offset
+                            (translated down) until a hover event overwrote
+                            it. Keeping them on separate DOM nodes avoids the
+                            conflict entirely.
+                          */
+                          <div key={track.id} className="work-card w-full">
+                            <TiltCard className="h-full w-full">
                               <div
-                                className="relative flex h-32 items-end justify-between overflow-hidden p-4"
-                                style={{
-                                  background:
-                                    "linear-gradient(160deg, #211e1a 0%, #131110 100%)",
-                                }}
+                                className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
+                                  active
+                                    ? "border-accent/50 bg-accent/[0.04]"
+                                    : "border-ink/10 hover:border-ink/25"
+                                }`}
                               >
-                                <CardEqualizer
-                                  playing={activePlaying}
-                                  seed={i + 1}
-                                  active={active}
-                                />
                                 <div
-                                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
-                                  aria-hidden
-                                />
-                                <span className="relative z-10 font-display text-2xl text-on-dark/70 tabular-nums">
-                                  {String(i + 1).padStart(2, "0")}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCardClick(i)}
-                                  data-cursor
-                                  data-cursor-label={
-                                    activePlaying ? t.work.cursorPause : t.work.cursorPlay
-                                  }
-                                  className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
+                                  className="relative flex h-32 items-end justify-between overflow-hidden p-4"
+                                  style={{
+                                    background:
+                                      "linear-gradient(160deg, #211e1a 0%, #131110 100%)",
+                                  }}
                                 >
-                                  {activePlaying ? <IconPause /> : <IconPlay />}
-                                </button>
-                              </div>
-
-                              <div className="flex flex-1 flex-col gap-3 p-5">
-                                <div>
-                                  <p
-                                    className={`truncate font-display text-lg tracking-[-0.01em] ${
-                                      active ? "text-accent" : "text-ink"
-                                    }`}
+                                  <CardEqualizer
+                                    playing={activePlaying}
+                                    seed={i + 1}
+                                    active={active}
+                                  />
+                                  <div
+                                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
+                                    aria-hidden
+                                  />
+                                  <span className="relative z-10 font-display text-2xl text-on-dark/70 tabular-nums">
+                                    {String(i + 1).padStart(2, "0")}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCardClick(i)}
+                                    data-cursor
+                                    data-cursor-label={
+                                      activePlaying ? t.work.cursorPause : t.work.cursorPlay
+                                    }
+                                    className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
                                   >
-                                    {track.title}
-                                  </p>
-                                  <p className="truncate text-[11px] uppercase tracking-[0.14em] text-muted">
-                                    {track.artist}
-                                    {track.genre ? ` · ${track.genre}` : ""}
-                                  </p>
+                                    {activePlaying ? <IconPause /> : <IconPlay />}
+                                  </button>
                                 </div>
 
-                                {track.tools && track.tools.length > 0 && (
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {track.tools.map((tool) => (
-                                      <span
-                                        key={tool}
-                                        className="rounded-full bg-ink/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-ink/60"
-                                      >
-                                        {tool}
-                                      </span>
-                                    ))}
+                                <div className="flex flex-1 flex-col gap-3 p-5">
+                                  <div>
+                                    <p
+                                      className={`truncate font-display text-lg tracking-[-0.01em] ${
+                                        active ? "text-accent" : "text-ink"
+                                      }`}
+                                    >
+                                      {track.title}
+                                    </p>
+                                    <p className="truncate text-[11px] uppercase tracking-[0.14em] text-muted">
+                                      {track.artist}
+                                      {track.genre ? ` · ${track.genre}` : ""}
+                                    </p>
                                   </div>
-                                )}
 
-                                <div className="mt-auto flex items-center justify-between pt-2">
-                                  <span className="flex items-center gap-2 tabular-nums text-[11px] text-muted">
-                                    {activePlaying && (
-                                      <span
-                                        className="h-1.5 w-1.5 rounded-full bg-accent animate-blink"
-                                        aria-hidden
-                                      />
-                                    )}
-                                    {active
-                                      ? `${formatTime(currentTime)} / ${formatTime(trackDuration ?? 0)}`
-                                      : formatTime(trackDuration ?? 0)}
-                                  </span>
-
-                                  {platforms.length > 0 && (
-                                    <div className="flex items-center gap-2.5">
-                                      {platforms.map(([key, url]) => (
-                                        <a
-                                          key={key}
-                                          href={url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          data-cursor
-                                          data-cursor-label={PLATFORM_LABELS[key] ?? key}
-                                          onClick={(e) => e.stopPropagation()}
-                                          className="text-muted transition-colors hover:text-accent"
-                                          aria-label={`${t.work.listenLabel} ${PLATFORM_LABELS[key] ?? key}`}
+                                  {track.tools && track.tools.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {track.tools.map((tool) => (
+                                        <span
+                                          key={tool}
+                                          className="rounded-full bg-ink/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-ink/60"
                                         >
-                                          {PLATFORM_ICONS[key] ?? null}
-                                        </a>
+                                          {tool}
+                                        </span>
                                       ))}
                                     </div>
                                   )}
+
+                                  <div className="mt-auto flex items-center justify-between pt-2">
+                                    <span className="flex items-center gap-2 tabular-nums text-[11px] text-muted">
+                                      {activePlaying && (
+                                        <span
+                                          className="h-1.5 w-1.5 rounded-full bg-accent animate-blink"
+                                          aria-hidden
+                                        />
+                                      )}
+                                      {active
+                                        ? `${formatTime(currentTime)} / ${formatTime(trackDuration ?? 0)}`
+                                        : formatTime(trackDuration ?? 0)}
+                                    </span>
+
+                                    {platforms.length > 0 && (
+                                      <div className="flex items-center gap-2.5">
+                                        {platforms.map(([key, url]) => (
+                                          <a
+                                            key={key}
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            data-cursor
+                                            data-cursor-label={PLATFORM_LABELS[key] ?? key}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="text-muted transition-colors hover:text-accent"
+                                            aria-label={`${t.work.listenLabel} ${PLATFORM_LABELS[key] ?? key}`}
+                                          >
+                                            {PLATFORM_ICONS[key] ?? null}
+                                          </a>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </TiltCard>
+                            </TiltCard>
+                          </div>
                         );
                       })}
                     </div>

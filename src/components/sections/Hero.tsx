@@ -134,16 +134,28 @@ export function Hero() {
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-5">
-              <Magnetic strength={0.2} className="hero-cta">
-                <button
-                  type="button"
-                  onClick={() => scrollToId("contact")}
-                  data-cursor
-                  className="inline-flex h-[52px] items-center gap-3 rounded-full border border-ink bg-ink px-7 text-[12px] uppercase tracking-[0.16em] text-paper transition-colors hover:border-accent hover:bg-accent"
-                >
-                  {t.hero.ctaPrimary}
-                </button>
-              </Magnetic>
+              {/*
+                IMPORTANT: the GSAP entrance animation (".hero-cta") lives on
+                THIS plain wrapper div, not on the Magnetic component itself.
+                Magnetic writes to its own inner div's `transform` on every
+                mousemove/mouseleave — if the GSAP-animated class had been on
+                that same node, the two systems would fight over the same
+                inline `transform`, leaving the button visually offset until
+                a hover event overwrote it. Keeping them on separate DOM
+                nodes avoids the conflict entirely.
+              */}
+              <div className="hero-cta">
+                <Magnetic strength={0.2}>
+                  <button
+                    type="button"
+                    onClick={() => scrollToId("contact")}
+                    data-cursor
+                    className="inline-flex h-[52px] items-center gap-3 rounded-full border border-ink bg-ink px-7 text-[12px] uppercase tracking-[0.16em] text-paper transition-colors hover:border-accent hover:bg-accent"
+                  >
+                    {t.hero.ctaPrimary}
+                  </button>
+                </Magnetic>
+              </div>
 
               <button
                 type="button"
