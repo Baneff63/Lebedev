@@ -7,6 +7,7 @@ import { useLocale } from "@/context/LocaleContext";
 import { usePlayer, formatTime } from "@/context/PlayerContext";
 import { SectionNumber } from "@/components/effects/SectionNumber";
 import { TiltCard } from "@/components/ui/TiltCard";
+import type { Track } from "@/types/site";
 
 function IconPlay() {
   return (
@@ -21,6 +22,27 @@ function IconPause() {
     <svg width="11" height="13" viewBox="0 0 11 13" fill="currentColor" aria-hidden>
       <rect x="0.5" y="0.5" width="3.2" height="12" />
       <rect x="7.3" y="0.5" width="3.2" height="12" />
+    </svg>
+  );
+}
+
+function IconChevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      width="8"
+      height="13"
+      viewBox="0 0 8 13"
+      fill="none"
+      aria-hidden
+      style={{ transform: direction === "left" ? "scaleX(-1)" : undefined }}
+    >
+      <path
+        d="M1 1l5.5 5.5L1 12"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -56,6 +78,8 @@ const PLATFORM_LABELS: Record<string, string> = {
 };
 
 const EQ_BAR_COUNT = 20;
+// How many track cards are shown per slider page.
+const PAGE_SIZE = 4;
 
 /**
  * Animated bars inside a card's cover.
@@ -181,6 +205,38 @@ export function Portfolio() {
   } = usePlayer();
   const sectionRef = useRef<HTMLElement>(null);
   const [durations, setDurations] = useState<Record<string, number>>({});
+  const [page, setPage] = useState(0);
+
+  // Group tracks into pages of PAGE_SIZE while keeping each track's
+  // original index (needed to compare against currentIndex from the player).
+  const pages = useMemo(() => {
+    const chunks: { track: Track; index: number }[][] = [];
+    for (let i = 0; i < tracks.length; i += PAGE_SIZE) {
+      chunks.push(
+        tracks.slice(i, i + PAGE_SIZE).map((track, j) => ({ track, index: i + j })),
+      );
+    }
+    return chunks;
+  }, [tracks]);
+
+  const pageCount = pages.length;
+
+  // Keep page in range if the track list shrinks/changes.
+  useEffect(() => {
+    if (page >= pageCount) setPage(0);
+  }, [pageCount, page]);
+
+  // Follow the currently playing track to its page automatically.
+  useEffect(() => {
+    if (pageCount === 0) return;
+    const targetPage = Math.floor(currentIndex / PAGE_SIZE);
+    if (targetPage !== page && targetPage < pageCount) setPage(targetPage);
+    // Only re-run when the active track changes, not on every page click.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
+
+  const prevPage = () => setPage((p) => (p - 1 + pageCount) % pageCount);
+  const nextPage = () => setPage((p) => (p + 1) % pageCount);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -305,9 +361,49 @@ export function Portfolio() {
                 </span>
               ))}
             </div>
+
+            {/* Slider controls — kept next to the intro on desktop so the
+                card list itself never grows past PAGE_SIZE cards tall. */}
+            {pageCount > 1 && (
+              <div className="mt-9 flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={prevPage}
+                  data-cursor
+                  aria-label="prev page"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ink/15 text-ink transition-colors hover:border-accent hover:text-accent"
+                >
+                  <IconChevron direction="left" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {pages.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setPage(i)}
+                      aria-label={`page ${i + 1}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        i === page ? "w-6 bg-accent" : "w-1.5 bg-ink/15 hover:bg-ink/30"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={nextPage}
+                  data-cursor
+                  aria-label="next page"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ink/15 text-ink transition-colors hover:border-accent hover:text-accent"
+                >
+                  <IconChevron direction="right" />
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Right column: track cards */}
+          {/* Right column: track cards, paginated PAGE_SIZE at a time */}
           <div className="md:col-span-8">
             {tracks.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-ink/12 py-16 text-center">
@@ -315,122 +411,138 @@ export function Portfolio() {
                 <p className="mt-2 text-[13px] text-muted/70">{t.work.emptyBody}</p>
               </div>
             ) : (
-              <div className="work-scroller grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {tracks.map((track, i) => {
-                  const active = i === currentIndex;
-                  const activePlaying = active && isPlaying;
-                  const trackDuration = active
-                    ? duration || durations[track.id]
-                    : durations[track.id];
-                  const platforms = track.platforms
-                    ? (Object.entries(track.platforms).filter(([, url]) => !!url) as [
-                        string,
-                        string,
-                      ][])
-                    : [];
+              <div className="work-scroller overflow-hidden">
+                <div
+                  className="flex transition-transform duration-500 ease-out-expo"
+                  style={{ transform: `translateX(-${page * 100}%)` }}
+                >
+                  {pages.map((pageTracks, pageIndex) => (
+                    <div
+                      key={pageIndex}
+                      className="grid w-full shrink-0 grid-cols-1 content-start gap-4 sm:grid-cols-2"
+                    >
+                      {pageTracks.map(({ track, index: i }) => {
+                        const active = i === currentIndex;
+                        const activePlaying = active && isPlaying;
+                        const trackDuration = active
+                          ? duration || durations[track.id]
+                          : durations[track.id];
+                        const platforms = track.platforms
+                          ? (Object.entries(track.platforms).filter(
+                              ([, url]) => !!url,
+                            ) as [string, string][])
+                          : [];
 
-                  return (
-                    <TiltCard key={track.id} className="work-card w-full">
-                      <div
-                        className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
-                          active
-                            ? "border-accent/50 bg-accent/[0.04]"
-                            : "border-ink/10 hover:border-ink/25"
-                        }`}
-                      >
-                        <div
-                          className="relative flex h-32 items-end justify-between overflow-hidden p-4"
-                          style={{
-                            background: "linear-gradient(160deg, #211e1a 0%, #131110 100%)",
-                          }}
-                        >
-                          <CardEqualizer playing={activePlaying} seed={i + 1} active={active} />
-                          <div
-                            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
-                            aria-hidden
-                          />
-                          <span className="relative z-10 font-display text-2xl text-on-dark/70 tabular-nums">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleCardClick(i)}
-                            data-cursor
-                            data-cursor-label={
-                              activePlaying ? t.work.cursorPause : t.work.cursorPlay
-                            }
-                            className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
-                          >
-                            {activePlaying ? <IconPause /> : <IconPlay />}
-                          </button>
-                        </div>
-
-                        <div className="flex flex-1 flex-col gap-3 p-5">
-                          <div>
-                            <p
-                              className={`truncate font-display text-lg tracking-[-0.01em] ${
-                                active ? "text-accent" : "text-ink"
+                        return (
+                          <TiltCard key={track.id} className="work-card w-full">
+                            <div
+                              className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
+                                active
+                                  ? "border-accent/50 bg-accent/[0.04]"
+                                  : "border-ink/10 hover:border-ink/25"
                               }`}
                             >
-                              {track.title}
-                            </p>
-                            <p className="truncate text-[11px] uppercase tracking-[0.14em] text-muted">
-                              {track.artist}
-                              {track.genre ? ` · ${track.genre}` : ""}
-                            </p>
-                          </div>
-
-                          {track.tools && track.tools.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5">
-                              {track.tools.map((tool) => (
-                                <span
-                                  key={tool}
-                                  className="rounded-full bg-ink/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-ink/60"
-                                >
-                                  {tool}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="mt-auto flex items-center justify-between pt-2">
-                            <span className="flex items-center gap-2 tabular-nums text-[11px] text-muted">
-                              {activePlaying && (
-                                <span
-                                  className="h-1.5 w-1.5 rounded-full bg-accent animate-blink"
+                              <div
+                                className="relative flex h-32 items-end justify-between overflow-hidden p-4"
+                                style={{
+                                  background:
+                                    "linear-gradient(160deg, #211e1a 0%, #131110 100%)",
+                                }}
+                              >
+                                <CardEqualizer
+                                  playing={activePlaying}
+                                  seed={i + 1}
+                                  active={active}
+                                />
+                                <div
+                                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
                                   aria-hidden
                                 />
-                              )}
-                              {active
-                                ? `${formatTime(currentTime)} / ${formatTime(trackDuration ?? 0)}`
-                                : formatTime(trackDuration ?? 0)}
-                            </span>
-
-                            {platforms.length > 0 && (
-                              <div className="flex items-center gap-2.5">
-                                {platforms.map(([key, url]) => (
-                                  <a
-                                    key={key}
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    data-cursor
-                                    data-cursor-label={PLATFORM_LABELS[key] ?? key}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="text-muted transition-colors hover:text-accent"
-                                    aria-label={`${t.work.listenLabel} ${PLATFORM_LABELS[key] ?? key}`}
-                                  >
-                                    {PLATFORM_ICONS[key] ?? null}
-                                  </a>
-                                ))}
+                                <span className="relative z-10 font-display text-2xl text-on-dark/70 tabular-nums">
+                                  {String(i + 1).padStart(2, "0")}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCardClick(i)}
+                                  data-cursor
+                                  data-cursor-label={
+                                    activePlaying ? t.work.cursorPause : t.work.cursorPlay
+                                  }
+                                  className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
+                                >
+                                  {activePlaying ? <IconPause /> : <IconPlay />}
+                                </button>
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </TiltCard>
-                  );
-                })}
+
+                              <div className="flex flex-1 flex-col gap-3 p-5">
+                                <div>
+                                  <p
+                                    className={`truncate font-display text-lg tracking-[-0.01em] ${
+                                      active ? "text-accent" : "text-ink"
+                                    }`}
+                                  >
+                                    {track.title}
+                                  </p>
+                                  <p className="truncate text-[11px] uppercase tracking-[0.14em] text-muted">
+                                    {track.artist}
+                                    {track.genre ? ` · ${track.genre}` : ""}
+                                  </p>
+                                </div>
+
+                                {track.tools && track.tools.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {track.tools.map((tool) => (
+                                      <span
+                                        key={tool}
+                                        className="rounded-full bg-ink/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-ink/60"
+                                      >
+                                        {tool}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                <div className="mt-auto flex items-center justify-between pt-2">
+                                  <span className="flex items-center gap-2 tabular-nums text-[11px] text-muted">
+                                    {activePlaying && (
+                                      <span
+                                        className="h-1.5 w-1.5 rounded-full bg-accent animate-blink"
+                                        aria-hidden
+                                      />
+                                    )}
+                                    {active
+                                      ? `${formatTime(currentTime)} / ${formatTime(trackDuration ?? 0)}`
+                                      : formatTime(trackDuration ?? 0)}
+                                  </span>
+
+                                  {platforms.length > 0 && (
+                                    <div className="flex items-center gap-2.5">
+                                      {platforms.map(([key, url]) => (
+                                        <a
+                                          key={key}
+                                          href={url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          data-cursor
+                                          data-cursor-label={PLATFORM_LABELS[key] ?? key}
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="text-muted transition-colors hover:text-accent"
+                                          aria-label={`${t.work.listenLabel} ${PLATFORM_LABELS[key] ?? key}`}
+                                        >
+                                          {PLATFORM_ICONS[key] ?? null}
+                                        </a>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </TiltCard>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

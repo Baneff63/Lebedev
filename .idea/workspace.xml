@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.1 web-master">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yandex_663c91d9a2f58186.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/yandex_663c91d9a2f58186.html" afterDir="false" />
-    </list>
+    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.1 web-master fix" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -48,6 +45,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "H:\\lebedev\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -75,7 +73,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1785396947527</updated>
-      <workItem from="1785396954937" duration="2602000" />
+      <workItem from="1785396954937" duration="2900000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -117,7 +115,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785399394769</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="patch 2.1 web-master fix">
+      <option name="closed" value="true" />
+      <created>1785400440760</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1785400440760</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -139,6 +145,7 @@
     <MESSAGE value="patch 2.1 eq  upd" />
     <MESSAGE value="patch 2.1 fix hero" />
     <MESSAGE value="patch 2.1 web-master" />
-    <option name="LAST_COMMIT_MESSAGE" value="patch 2.1 web-master" />
+    <MESSAGE value="patch 2.1 web-master fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="patch 2.1 web-master fix" />
   </component>
 </project>
