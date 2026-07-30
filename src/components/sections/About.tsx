@@ -38,6 +38,15 @@ export function About() {
         ease: "power3.out",
       });
 
+      gsap.from(".about-highlight", {
+        scrollTrigger: { trigger: ".about-highlights", start: "top 85%" },
+        x: -16,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "power3.out",
+      });
+
       gsap.from(".about-stat", {
         scrollTrigger: { trigger: ".about-stats", start: "top 80%" },
         y: 50,
@@ -66,11 +75,11 @@ export function About() {
     <section
       id="about"
       ref={sectionRef}
-      className="relative overflow-hidden border-t border-ink/8 px-5 py-24 md:px-10 md:py-40"
+      className="relative overflow-hidden border-t border-ink/8 px-5 py-20 md:px-10 md:py-32"
     >
       <SectionNumber num="01" className="top-8 right-4 md:right-10" />
 
-      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-16 md:grid-cols-12 md:gap-8">
+      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-14 md:grid-cols-12 md:gap-8">
         <div className="about-label md:col-span-2">
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted">
             {t.about.label}
@@ -78,33 +87,41 @@ export function About() {
         </div>
 
         <div className="md:col-span-6">
-          <h2 className="about-headline font-display text-[clamp(2rem,5vw,3.75rem)] leading-[1.08] tracking-[-0.02em] text-ink">
+          <h2 className="about-headline font-display text-[clamp(1.85rem,4.5vw,3.25rem)] leading-[1.1] tracking-[-0.02em] text-ink">
             {headlineLines.map((line, i) => (
               <span key={line} className="line block overflow-hidden">
-                <span
-                  className={
-                    i === headlineLines.length - 1 ? "italic text-accent" : ""
-                  }
-                >
+                <span className={i === headlineLines.length - 1 ? "italic text-accent" : ""}>
                   {line}
                 </span>
               </span>
             ))}
           </h2>
 
-          <p className="about-body mt-10 max-w-[480px] text-[15px] leading-[1.75] tracking-[0.01em] text-muted">
+          <p className="about-body mt-8 max-w-[440px] text-[15px] leading-[1.7] tracking-[0.01em] text-muted">
             {t.about.body}
           </p>
+
+          <div className="about-highlights mt-9 flex flex-col gap-3.5">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted/70">
+              {t.about.highlightsLabel}
+            </p>
+            {t.about.highlights.map((item) => (
+              <div key={item} className="about-highlight flex items-start gap-3">
+                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
+                <p className="text-[14px] leading-[1.6] text-ink/80">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="about-stats flex flex-col gap-10 md:col-span-3 md:col-start-10 md:pt-2">
+        <div className="about-stats flex flex-col gap-9 md:col-span-3 md:col-start-10 md:pt-2">
           {t.about.stats.map((stat) => (
             <div key={stat.label} className="about-stat relative">
               <span
                 className="absolute -left-3 top-1/2 hidden h-px w-6 -translate-y-1/2 bg-accent/30 md:block"
                 aria-hidden
               />
-              <p className="font-display text-[clamp(2.5rem,5vw,4rem)] leading-none tracking-[-0.03em] text-ink tabular-nums">
+              <p className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-none tracking-[-0.03em] text-ink tabular-nums">
                 {"symbol" in stat && stat.symbol ? (
                   <StatCounter symbol={stat.symbol} />
                 ) : (
@@ -121,8 +138,8 @@ export function About() {
           ))}
         </div>
 
-        <div className="about-tools md:col-span-12 md:mt-8">
-          <div className="flex flex-col gap-6 border-t border-ink/8 pt-10 md:flex-row md:items-center md:justify-between">
+        <div className="about-tools md:col-span-12 md:mt-6">
+          <div className="flex flex-col gap-6 border-t border-ink/8 pt-8 md:flex-row md:items-center md:justify-between">
             <p className="text-[11px] uppercase tracking-[0.22em] text-muted">
               {t.about.tools.label}
             </p>

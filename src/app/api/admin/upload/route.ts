@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
+import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { getUploadsDir } from "@/lib/site-data";
 
 const ALLOWED_TYPES = new Set([
   "audio/mpeg",
@@ -35,13 +33,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Max 30MB" }, { status: 400 });
   }
 
-  const ext = path.extname(file.name) || ".mp3";
-  const safeName = `${randomUUID()}${ext.toLowerCase()}`;
-  const dir = getUploadsDir();
-  await fs.mkdir(dir, { recursive: true });
+  const ext = file.name.includes(".") ? file.name.split(".").pop() : "mp3";
+  const safeName = `audio/${randomUUID()}.${ext?.toLowerCase() ?? "mp3"}`;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(dir, safeName), buffer);
+  const blob = await put(safeName, file, {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: file.type || "audio/mpeg",
+  });
 
-  return NextResponse.json({ src: `/uploads/audio/${safeName}` });
+  return NextResponse.json({ src: blob.url });
 }

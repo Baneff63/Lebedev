@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter_Tight, Literata } from "next/font/google";
 import { Providers } from "@/components/providers/Providers";
 import { ThemeScript } from "@/components/ui/ThemeScript";
+import { content, siteUrl } from "@/lib/i18n/content";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -24,9 +25,59 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  title: "baneoff — sound producer",
-  description:
-    "Лебедев Даниил. Sound producer. Стабильно лучше — без лишнего шума.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: content.ru.meta.title,
+    template: "%s — baneoff",
+  },
+  description: content.ru.meta.description,
+  keywords: [
+    "сведение треков",
+    "мастеринг треков",
+    "mixing engineer",
+    "mastering engineer",
+    "звукорежиссер",
+    "baneoff",
+  ],
+  authors: [{ name: "Даниил Лебедев" }],
+  creator: "Даниил Лебедев",
+  alternates: {
+    canonical: siteUrl,
+    languages: {
+      ru: siteUrl,
+      en: siteUrl,
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: "baneoff",
+    title: content.ru.meta.title,
+    description: content.ru.meta.description,
+    locale: "ru_RU",
+    alternateLocale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: content.ru.meta.title,
+    description: content.ru.meta.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+    },
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f2ede3" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0b0d" },
+  ],
 };
 
 export default function RootLayout({

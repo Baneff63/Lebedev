@@ -52,10 +52,15 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.85);
   const isPlayingRef = useRef(isPlaying);
+  const volumeRef = useRef(volume);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+
+  useEffect(() => {
+    volumeRef.current = volume;
+  }, [volume]);
 
   const safeIndex =
     tracks.length === 0 ? 0 : Math.min(currentIndex, tracks.length - 1);
@@ -64,7 +69,7 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "metadata";
-    audio.volume = volume;
+    audio.volume = volumeRef.current;
     audioRef.current = audio;
 
     const onTime = () => setCurrentTime(audio.currentTime);
@@ -88,7 +93,12 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       audio.removeEventListener("ended", onEnd);
       audioRef.current = null;
     };
-  }, [tracks.length, volume]);
+    // The <audio> element is only recreated when the track list itself
+    // changes. Volume changes are applied via the effect below, without
+    // tearing down and recreating the element (that was previously causing
+    // playback to stop whenever the volume slider moved).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tracks.length]);
 
   useEffect(() => {
     const audio = audioRef.current;

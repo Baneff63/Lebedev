@@ -12,7 +12,6 @@ export function Header() {
 
   const links = [
     { href: "#about", label: t.nav.about },
-    { href: "#philosophy", label: t.nav.philosophy },
     { href: "#work", label: t.nav.work },
     { href: "#contact", label: t.nav.contact },
   ];

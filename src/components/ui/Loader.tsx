@@ -66,7 +66,7 @@ export function Loader() {
 
       <div className="mx-auto w-full max-w-[1440px]">
         <p className="font-display text-[clamp(2rem,6vw,4rem)] leading-none tracking-[-0.02em] text-ink italic">
-          sound producer
+          mixing &amp; mastering
         </p>
         <div className="mt-8 h-px w-full bg-ink/10">
           <div

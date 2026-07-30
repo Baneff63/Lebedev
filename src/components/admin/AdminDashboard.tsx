@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import type { SiteData, Track } from "@/types/site";
+import type { SiteData, Track, TrackPlatforms } from "@/types/site";
 import type { Locale } from "@/lib/i18n/content";
 
 type Tab = "tracks" | "content" | "links";
@@ -14,6 +14,8 @@ function newId() {
 function emptyTrack(): Track {
   return { id: newId(), title: "New track", artist: "baneoff", src: "" };
 }
+
+const PLATFORM_KEYS: (keyof TrackPlatforms)[] = ["spotify", "appleMusic", "youtube", "soundcloud"];
 
 export function AdminDashboard() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -100,6 +102,18 @@ export function AdminDashboard() {
     });
   };
 
+  const updateTrackPlatform = (index: number, key: keyof TrackPlatforms, value: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const tracks = [...prev.tracks];
+      tracks[index] = {
+        ...tracks[index],
+        platforms: { ...tracks[index].platforms, [key]: value },
+      };
+      return { ...prev, tracks };
+    });
+  };
+
   const moveTrack = (index: number, dir: -1 | 1) => {
     setData((prev) => {
       if (!prev) return prev;
@@ -135,6 +149,24 @@ export function AdminDashboard() {
     });
   };
 
+  const patchLocaleList = (path: string, value: string) => {
+    patchLocaleValue(path, value.split("\n").map((line) => line.trim()).filter(Boolean));
+  };
+
+  const patchLocaleValue = (path: string, value: unknown) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const copy = structuredClone(prev);
+      const parts = path.split(".");
+      let cursor: Record<string, unknown> = copy[locale] as Record<string, unknown>;
+      for (let i = 0; i < parts.length - 1; i++) {
+        cursor = cursor[parts[i]] as Record<string, unknown>;
+      }
+      cursor[parts[parts.length - 1]] = value;
+      return copy;
+    });
+  };
+
   if (authenticated === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper text-ink">
@@ -157,9 +189,7 @@ export function AdminDashboard() {
             placeholder="Пароль"
             autoFocus
           />
-          {loginError && (
-            <p className="mt-2 text-sm text-accent">{loginError}</p>
-          )}
+          {loginError && <p className="mt-2 text-sm text-accent">{loginError}</p>}
           <button
             type="submit"
             className="mt-6 w-full border border-ink/15 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors hover:border-accent hover:text-accent"
@@ -190,15 +220,10 @@ export function AdminDashboard() {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-4 md:px-8">
           <div>
             <p className="font-display text-lg">Admin</p>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted">
-              baneoff CMS
-            </p>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted">baneoff CMS</p>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-[11px] uppercase tracking-[0.15em] text-muted hover:text-accent"
-            >
+            <Link href="/" className="text-[11px] uppercase tracking-[0.15em] text-muted hover:text-accent">
               Сайт
             </Link>
             <button
@@ -221,14 +246,12 @@ export function AdminDashboard() {
       </header>
 
       <div className="mx-auto max-w-5xl px-5 py-8 md:px-8">
-        {message && (
-          <p className="mb-6 text-sm text-accent">{message}</p>
-        )}
+        {message && <p className="mb-6 text-sm text-accent">{message}</p>}
 
         <div className="mb-8 flex flex-wrap gap-2">
           {(
             [
-              ["tracks", "Треки"],
+              ["tracks", "Портфолио"],
               ["content", "Тексты"],
               ["links", "Ссылки"],
             ] as const
@@ -238,9 +261,7 @@ export function AdminDashboard() {
               type="button"
               onClick={() => setTab(id)}
               className={`px-4 py-2 text-[11px] uppercase tracking-[0.15em] transition-colors ${
-                tab === id
-                  ? "bg-ink text-paper"
-                  : "border border-ink/10 text-muted hover:text-ink"
+                tab === id ? "bg-ink text-paper" : "border border-ink/10 text-muted hover:text-ink"
               }`}
             >
               {label}
@@ -267,13 +288,11 @@ export function AdminDashboard() {
         {tab === "tracks" && (
           <div className="space-y-6">
             <p className="text-sm text-muted">
-              Треки отображаются в плеере внизу сайта. Загрузи mp3/wav.
+              Треки отображаются в портфолио и плеере внизу сайта. Загрузи mp3/wav и заполни жанр,
+              инструменты и ссылки на площадки — это то, что видит клиент в карточке.
             </p>
             {data.tracks.map((track, i) => (
-              <div
-                key={track.id}
-                className="border border-ink/10 p-5"
-              >
+              <div key={track.id} className="border border-ink/10 p-5">
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block">
                     <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
@@ -295,10 +314,57 @@ export function AdminDashboard() {
                       onChange={(e) => updateTrack(i, { artist: e.target.value })}
                     />
                   </label>
+                  <label className="block">
+                    <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                      Жанр
+                    </span>
+                    <input
+                      className="admin-input mt-1"
+                      placeholder="Indie pop"
+                      value={track.genre ?? ""}
+                      onChange={(e) => updateTrack(i, { genre: e.target.value })}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                      Инструменты (через запятую)
+                    </span>
+                    <input
+                      className="admin-input mt-1"
+                      placeholder="FL Studio, Waves"
+                      value={track.tools?.join(", ") ?? ""}
+                      onChange={(e) =>
+                        updateTrack(i, {
+                          tools: e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean),
+                        })
+                      }
+                    />
+                  </label>
                 </div>
-                <p className="mt-3 truncate text-[12px] text-muted">
+
+                <p className="mt-4 truncate text-[12px] text-muted">
                   {track.src || "Файл не загружен"}
                 </p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {PLATFORM_KEYS.map((key) => (
+                    <label key={key} className="block">
+                      <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                        {key} URL
+                      </span>
+                      <input
+                        className="admin-input mt-1"
+                        placeholder="https://..."
+                        value={track.platforms?.[key] ?? ""}
+                        onChange={(e) => updateTrackPlatform(i, key, e.target.value)}
+                      />
+                    </label>
+                  ))}
+                </div>
+
                 <div className="mt-4 flex flex-wrap gap-2">
                   <label className="cursor-pointer border border-ink/15 px-3 py-2 text-[11px] uppercase tracking-[0.12em] hover:border-accent">
                     {uploading ? "…" : "Загрузить"}
@@ -354,7 +420,17 @@ export function AdminDashboard() {
           <div className="space-y-10">
             <section>
               <h2 className="mb-4 font-display text-xl">Hero</h2>
-              <div className="grid gap-4 md:grid-cols-3">
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                  eyebrow
+                </span>
+                <input
+                  className="admin-input mt-1"
+                  value={c.hero.eyebrow}
+                  onChange={(e) => patchLocale("hero.eyebrow", e.target.value)}
+                />
+              </label>
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
                 {(["line1", "line2", "line3"] as const).map((key) => (
                   <label key={key} className="block">
                     <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
@@ -370,21 +446,63 @@ export function AdminDashboard() {
               </div>
               <label className="mt-4 block">
                 <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                  status
+                  subheadline
                 </span>
-                <input
-                  className="admin-input mt-1"
-                  value={c.hero.status}
-                  onChange={(e) => patchLocale("hero.status", e.target.value)}
+                <textarea
+                  className="admin-textarea mt-1"
+                  value={c.hero.subheadline}
+                  onChange={(e) => patchLocale("hero.subheadline", e.target.value)}
                 />
               </label>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    CTA (основной)
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.hero.ctaPrimary}
+                    onChange={(e) => patchLocale("hero.ctaPrimary", e.target.value)}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    CTA (вторичный)
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.hero.ctaSecondary}
+                    onChange={(e) => patchLocale("hero.ctaSecondary", e.target.value)}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    status
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.hero.status}
+                    onChange={(e) => patchLocale("hero.status", e.target.value)}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    trust line
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.hero.trust}
+                    onChange={(e) => patchLocale("hero.trust", e.target.value)}
+                  />
+                </label>
+              </div>
             </section>
 
             <section>
               <h2 className="mb-4 font-display text-xl">About</h2>
               <label className="block">
                 <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                  headline (\\n для переноса)
+                  headline (\n для переноса)
                 </span>
                 <textarea
                   className="admin-textarea mt-1"
@@ -402,10 +520,20 @@ export function AdminDashboard() {
                   onChange={(e) => patchLocale("about.body", e.target.value)}
                 />
               </label>
+              <label className="mt-4 block">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                  ключевые пункты (по одному на строку)
+                </span>
+                <textarea
+                  className="admin-textarea mt-1"
+                  value={c.about.highlights.join("\n")}
+                  onChange={(e) => patchLocaleList("about.highlights", e.target.value)}
+                />
+              </label>
             </section>
 
             <section>
-              <h2 className="mb-4 font-display text-xl">Work</h2>
+              <h2 className="mb-4 font-display text-xl">Portfolio</h2>
               <label className="block">
                 <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
                   headline
@@ -424,6 +552,16 @@ export function AdminDashboard() {
                   className="admin-textarea mt-1"
                   value={c.work.body}
                   onChange={(e) => patchLocale("work.body", e.target.value)}
+                />
+              </label>
+              <label className="mt-4 block">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                  услуги (по одной на строку)
+                </span>
+                <textarea
+                  className="admin-textarea mt-1"
+                  value={c.work.services.join("\n")}
+                  onChange={(e) => patchLocaleList("work.services", e.target.value)}
                 />
               </label>
             </section>
@@ -450,61 +588,57 @@ export function AdminDashboard() {
                   onChange={(e) => patchLocale("contact.body", e.target.value)}
                 />
               </label>
-              <label className="mt-4 block">
-                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                  cta
-                </span>
-                <input
-                  className="admin-input mt-1"
-                  value={c.contact.cta}
-                  onChange={(e) => patchLocale("contact.cta", e.target.value)}
-                />
-              </label>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    cta
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.contact.cta}
+                    onChange={(e) => patchLocale("contact.cta", e.target.value)}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    cta subtitle
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.contact.ctaSub}
+                    onChange={(e) => patchLocale("contact.ctaSub", e.target.value)}
+                  />
+                </label>
+              </div>
             </section>
           </div>
         )}
 
         {tab === "links" && (
-          <div className="space-y-6 max-w-lg">
-            <label className="block">
-              <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                Telegram URL
-              </span>
-              <input
-                className="admin-input mt-1"
-                value={data.links.telegram}
-                onChange={(e) =>
-                  setData({ ...data, links: { ...data.links, telegram: e.target.value } })
-                }
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                Email mailto
-              </span>
-              <input
-                className="admin-input mt-1"
-                value={data.links.email}
-                onChange={(e) =>
-                  setData({ ...data, links: { ...data.links, email: e.target.value } })
-                }
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                Email label
-              </span>
-              <input
-                className="admin-input mt-1"
-                value={data.links.emailLabel}
-                onChange={(e) =>
-                  setData({
-                    ...data,
-                    links: { ...data.links, emailLabel: e.target.value },
-                  })
-                }
-              />
-            </label>
+          <div className="max-w-lg space-y-6">
+            {(
+              [
+                ["telegram", "Telegram URL"],
+                ["email", "Email mailto"],
+                ["emailLabel", "Email label"],
+                ["instagram", "Instagram URL"],
+                ["soundcloud", "SoundCloud URL"],
+                ["spotify", "Spotify URL"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key} className="block">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                  {label}
+                </span>
+                <input
+                  className="admin-input mt-1"
+                  value={data.links[key] ?? ""}
+                  onChange={(e) =>
+                    setData({ ...data, links: { ...data.links, [key]: e.target.value } })
+                  }
+                />
+              </label>
+            ))}
           </div>
         )}
       </div>

@@ -1,17 +1,30 @@
 import type { Content, Locale } from "@/lib/i18n/content";
 import { content, links as defaultLinks } from "@/lib/i18n/content";
 
+export type TrackPlatforms = {
+  spotify?: string;
+  appleMusic?: string;
+  youtube?: string;
+  soundcloud?: string;
+};
+
 export type Track = {
   id: string;
   title: string;
   artist: string;
   src: string;
+  genre?: string;
+  tools?: string[];
+  platforms?: TrackPlatforms;
 };
 
 export type SiteLinks = {
   telegram: string;
   email: string;
   emailLabel: string;
+  instagram?: string;
+  soundcloud?: string;
+  spotify?: string;
 };
 
 export type SiteData = {
