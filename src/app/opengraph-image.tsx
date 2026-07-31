@@ -34,7 +34,7 @@ export default function OpengraphImage() {
 
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", fontSize: 84, fontWeight: 600, lineHeight: 1 }}>
-            Sound you can
+            Звук, которому
           </div>
           <div
             style={{
@@ -46,7 +46,7 @@ export default function OpengraphImage() {
               color: "#c41e3a",
             }}
           >
-            trust with your release.
+            можно доверить релиз.
           </div>
         </div>
 
