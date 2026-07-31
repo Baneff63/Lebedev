@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.1 work fix">
+    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.1 analyzer upd">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/PlayerContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PlayerContext.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +80,7 @@
       <workItem from="1785396954937" duration="3972000" />
       <workItem from="1785416074006" duration="2355000" />
       <workItem from="1785419130975" duration="1388000" />
-      <workItem from="1785438424318" duration="1433000" />
+      <workItem from="1785438424318" duration="1965000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -187,7 +186,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785439099922</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="patch 2.1 analyzer upd">
+      <option name="closed" value="true" />
+      <created>1785440023246</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1785440023246</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -211,6 +218,7 @@
     <MESSAGE value="patch 2.1 web-master" />
     <MESSAGE value="patch 2.1 web-master fix" />
     <MESSAGE value="patch 2.1 work fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="patch 2.1 work fix" />
+    <MESSAGE value="patch 2.1 analyzer upd" />
+    <option name="LAST_COMMIT_MESSAGE" value="patch 2.1 analyzer upd" />
   </component>
 </project>
