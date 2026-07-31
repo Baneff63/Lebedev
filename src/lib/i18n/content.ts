@@ -230,4 +230,4 @@ export const links = {
   spotify: "",
 } as const;
 
-export const siteUrl = "https://baneoff.com";
+export const siteUrl = "https://baneoff.ru";
