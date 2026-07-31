@@ -2,20 +2,38 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import type { SiteData, Track, TrackPlatforms } from "@/types/site";
+import type { BlogPost, SiteData, Track, TrackCategory, TrackPlatforms } from "@/types/site";
 import type { Locale } from "@/lib/i18n/content";
 
-type Tab = "tracks" | "content" | "links";
+type Tab = "tracks" | "tools" | "blog" | "content" | "links";
 
 function newId() {
   return crypto.randomUUID();
 }
 
 function emptyTrack(): Track {
-  return { id: newId(), title: "New track", artist: "baneoff", src: "" };
+  return { id: newId(), title: "New track", artist: "baneoff", src: "", category: "mixed" };
+}
+
+function emptyPost(): BlogPost {
+  return {
+    id: newId(),
+    slug: "novy-post",
+    date: new Date().toISOString().slice(0, 10),
+    published: false,
+    coverVariant: 0,
+    ru: { title: "Новый пост", excerpt: "", content: "" },
+    en: { title: "New post", excerpt: "", content: "" },
+  };
 }
 
 const PLATFORM_KEYS: (keyof TrackPlatforms)[] = ["spotify", "appleMusic", "youtube", "soundcloud"];
+
+const CATEGORY_OPTIONS: { value: TrackCategory; label: string }[] = [
+  { value: "mixed", label: "Сведено" },
+  { value: "beats", label: "Биты" },
+  { value: "personal", label: "Личные работы" },
+];
 
 export function AdminDashboard() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -132,6 +150,66 @@ export function AdminDashboard() {
         ...prev,
         tracks: prev.tracks.filter((_, i) => i !== index),
       };
+    });
+  };
+
+  const updateToolName = (index: number, name: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const toolsStack = [...prev.toolsStack];
+      toolsStack[index] = { ...toolsStack[index], name };
+      return { ...prev, toolsStack };
+    });
+  };
+
+  const removeTool = (index: number) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, toolsStack: prev.toolsStack.filter((_, i) => i !== index) };
+    });
+  };
+
+  const addTool = () => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        toolsStack: [...prev.toolsStack, { id: newId(), name: "Новый инструмент" }],
+      };
+    });
+  };
+
+  const updatePostField = (
+    index: number,
+    patch: Partial<BlogPost> | { locale: Locale; field: "title" | "excerpt" | "content"; value: string },
+  ) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const posts = [...prev.posts];
+      const post = posts[index];
+      if ("locale" in patch) {
+        posts[index] = {
+          ...post,
+          [patch.locale]: { ...post[patch.locale], [patch.field]: patch.value },
+        };
+      } else {
+        posts[index] = { ...post, ...patch };
+      }
+      return { ...prev, posts };
+    });
+  };
+
+  const removePost = (index: number) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, posts: prev.posts.filter((_, i) => i !== index) };
+    });
+  };
+
+  const addPost = () => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, posts: [...prev.posts, emptyPost()] };
     });
   };
 
@@ -252,6 +330,8 @@ export function AdminDashboard() {
           {(
             [
               ["tracks", "Портфолио"],
+              ["tools", "Инструменты"],
+              ["blog", "Блог"],
               ["content", "Тексты"],
               ["links", "Ссылки"],
             ] as const
@@ -288,8 +368,9 @@ export function AdminDashboard() {
         {tab === "tracks" && (
           <div className="space-y-6">
             <p className="text-sm text-muted">
-              Треки отображаются в портфолио и плеере внизу сайта. Загрузи mp3/wav и заполни жанр,
-              инструменты и ссылки на площадки — это то, что видит клиент в карточке.
+              Треки отображаются в портфолио и плеере внизу сайта. Загрузи mp3/wav, выбери
+              категорию (Сведено / Биты / Личные работы) и заполни жанр, инструменты и ссылки на
+              площадки — это то, что видит клиент в карточке.
             </p>
             {data.tracks.map((track, i) => (
               <div key={track.id} className="border border-ink/10 p-5">
@@ -316,6 +397,24 @@ export function AdminDashboard() {
                   </label>
                   <label className="block">
                     <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                      Категория
+                    </span>
+                    <select
+                      className="admin-input mt-1"
+                      value={track.category ?? "mixed"}
+                      onChange={(e) =>
+                        updateTrack(i, { category: e.target.value as TrackCategory })
+                      }
+                    >
+                      {CATEGORY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
                       Жанр
                     </span>
                     <input
@@ -325,7 +424,7 @@ export function AdminDashboard() {
                       onChange={(e) => updateTrack(i, { genre: e.target.value })}
                     />
                   </label>
-                  <label className="block">
+                  <label className="block md:col-span-2">
                     <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
                       Инструменты (через запятую)
                     </span>
@@ -412,6 +511,139 @@ export function AdminDashboard() {
               className="border border-dashed border-ink/20 px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-muted hover:border-accent hover:text-accent"
             >
               + Добавить трек
+            </button>
+          </div>
+        )}
+
+        {tab === "tools" && (
+          <div className="max-w-lg space-y-4">
+            <p className="text-sm text-muted">
+              Список отображается на странице «Контакт» как плавно вращающийся 3D-эллипс из
+              инструментов твоего стека.
+            </p>
+            {data.toolsStack.map((tool, i) => (
+              <div key={tool.id} className="flex items-center gap-3">
+                <input
+                  className="admin-input"
+                  value={tool.name}
+                  onChange={(e) => updateToolName(i, e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeTool(i)}
+                  className="shrink-0 text-[11px] uppercase tracking-[0.12em] text-accent"
+                >
+                  Удалить
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addTool}
+              className="border border-dashed border-ink/20 px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-muted hover:border-accent hover:text-accent"
+            >
+              + Добавить инструмент
+            </button>
+          </div>
+        )}
+
+        {tab === "blog" && (
+          <div className="space-y-8">
+            <p className="text-sm text-muted">
+              Посты отображаются на странице «Блог». Заполни оба языка — при переключении языка
+              на сайте показывается соответствующая версия. Пост не появится на сайте, пока не
+              отмечен как «Опубликован».
+            </p>
+            {data.posts.map((post, i) => (
+              <div key={post.id} className="border border-ink/10 p-5">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="block">
+                    <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                      Slug (часть URL)
+                    </span>
+                    <input
+                      className="admin-input mt-1"
+                      value={post.slug}
+                      onChange={(e) => updatePostField(i, { slug: e.target.value })}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                      Дата
+                    </span>
+                    <input
+                      type="date"
+                      className="admin-input mt-1"
+                      value={post.date}
+                      onChange={(e) => updatePostField(i, { date: e.target.value })}
+                    />
+                  </label>
+                </div>
+
+                {(["ru", "en"] as const).map((l) => (
+                  <div key={l} className="mt-5">
+                    <p className="text-[11px] uppercase tracking-[0.15em] text-accent">{l}</p>
+                    <input
+                      className="admin-input mt-2"
+                      placeholder="Заголовок"
+                      value={post[l].title}
+                      onChange={(e) =>
+                        updatePostField(i, { locale: l, field: "title", value: e.target.value })
+                      }
+                    />
+                    <input
+                      className="admin-input mt-2"
+                      placeholder="Краткое описание"
+                      value={post[l].excerpt}
+                      onChange={(e) =>
+                        updatePostField(i, {
+                          locale: l,
+                          field: "excerpt",
+                          value: e.target.value,
+                        })
+                      }
+                    />
+                    <textarea
+                      className="admin-textarea mt-2"
+                      placeholder="Текст поста (абзацы через пустую строку)"
+                      value={post[l].content}
+                      onChange={(e) =>
+                        updatePostField(i, {
+                          locale: l,
+                          field: "content",
+                          value: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ))}
+
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <label className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-muted">
+                    <input
+                      type="checkbox"
+                      checked={post.published}
+                      onChange={(e) => updatePostField(i, { published: e.target.checked })}
+                    />
+                    Опубликован
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removePost(i)}
+                    className="text-[11px] uppercase tracking-[0.12em] text-accent"
+                  >
+                    Удалить пост
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={addPost}
+              className="border border-dashed border-ink/20 px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-muted hover:border-accent hover:text-accent"
+            >
+              + Добавить пост
             </button>
           </div>
         )}
@@ -564,6 +796,38 @@ export function AdminDashboard() {
                   onChange={(e) => patchLocaleList("work.services", e.target.value)}
                 />
               </label>
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    вкладка «Сведено»
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.work.tabs.mixed}
+                    onChange={(e) => patchLocale("work.tabs.mixed", e.target.value)}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    вкладка «Биты»
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.work.tabs.beats}
+                    onChange={(e) => patchLocale("work.tabs.beats", e.target.value)}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    вкладка «Личные работы»
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={c.work.tabs.personal}
+                    onChange={(e) => patchLocale("work.tabs.personal", e.target.value)}
+                  />
+                </label>
+              </div>
             </section>
 
             <section>
@@ -610,6 +874,50 @@ export function AdminDashboard() {
                   />
                 </label>
               </div>
+            </section>
+
+            <section>
+              <h2 className="mb-4 font-display text-xl">Страница «Контакт» — 3D-стек</h2>
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                  заголовок над эллипсом (\n для переноса)
+                </span>
+                <textarea
+                  className="admin-textarea mt-1"
+                  value={c.contactPage.toolsHeadline}
+                  onChange={(e) => patchLocale("contactPage.toolsHeadline", e.target.value)}
+                />
+              </label>
+              <p className="mt-2 text-[12px] text-muted">
+                Сам список инструментов редактируется во вкладке «Инструменты».
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-4 font-display text-xl">Блог — общие тексты</h2>
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                  headline (\n для переноса)
+                </span>
+                <textarea
+                  className="admin-textarea mt-1"
+                  value={c.blog.headline}
+                  onChange={(e) => patchLocale("blog.headline", e.target.value)}
+                />
+              </label>
+              <label className="mt-4 block">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                  body
+                </span>
+                <textarea
+                  className="admin-textarea mt-1"
+                  value={c.blog.body}
+                  onChange={(e) => patchLocale("blog.body", e.target.value)}
+                />
+              </label>
+              <p className="mt-2 text-[12px] text-muted">
+                Сами посты редактируются во вкладке «Блог».
+              </p>
             </section>
           </div>
         )}

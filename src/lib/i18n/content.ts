@@ -11,6 +11,7 @@ export const content = {
       about: "Обо мне",
       work: "Портфолио",
       contact: "Контакт",
+      blog: "Блог",
     },
     hud: {
       scroll: "scroll",
@@ -72,6 +73,12 @@ export const content = {
       servicesLabel: "Услуги",
       services: ["Сведение", "Мастеринг", "Продакшн"],
       listenLabel: "Слушать на",
+      tabs: {
+        mixed: "Сведено",
+        beats: "Биты",
+        personal: "Личные работы",
+      },
+      seeAll: "Смотреть всё портфолио",
     },
     contact: {
       label: "03 — Контакт",
@@ -101,6 +108,19 @@ export const content = {
         privacyNote: "Обработка происходит локально в браузере — файл не покидает устройство.",
       },
     },
+    blog: {
+      label: "Блог",
+      headline: "Заметки\nиз студии.",
+      body: "Мысли о сведении, мастеринге и продакшне — без воды.",
+      empty: "Постов пока нет — скоро здесь появятся первые заметки.",
+      readMore: "Читать",
+      back: "← Все посты",
+      publishedOn: "Опубликовано",
+    },
+    contactPage: {
+      toolsLabel: "Мой стек",
+      toolsHeadline: "Инструменты,\nна которые можно положиться.",
+    },
     footer: {
       name: "Лебедев Даниил",
       handle: "baneoff",
@@ -119,6 +139,7 @@ export const content = {
       about: "About",
       work: "Portfolio",
       contact: "Contact",
+      blog: "Blog",
     },
     hud: {
       scroll: "scroll",
@@ -180,6 +201,12 @@ export const content = {
       servicesLabel: "Services",
       services: ["Mixing", "Mastering", "Production"],
       listenLabel: "Listen on",
+      tabs: {
+        mixed: "Mixed",
+        beats: "Beats",
+        personal: "Personal work",
+      },
+      seeAll: "See full portfolio",
     },
     contact: {
       label: "03 — Contact",
@@ -208,6 +235,19 @@ export const content = {
         errorTooBig: "File is over 60MB — try a shorter clip.",
         privacyNote: "Processing happens locally in your browser — the file never leaves your device.",
       },
+    },
+    blog: {
+      label: "Blog",
+      headline: "Notes from\nthe studio.",
+      body: "Thoughts on mixing, mastering and production — no fluff.",
+      empty: "No posts yet — check back soon.",
+      readMore: "Read",
+      back: "← All posts",
+      publishedOn: "Published",
+    },
+    contactPage: {
+      toolsLabel: "My stack",
+      toolsHeadline: "Tools I actually\nrely on.",
     },
     footer: {
       name: "Daniil Lebedev",
