@@ -56,11 +56,20 @@ export const metadata: Metadata = {
     description: content.ru.meta.description,
     locale: "ru_RU",
     alternateLocale: "en_US",
+        images: [
+      {
+        url: "/og-image.png",          // ← путь к картинке в public/
+        width: 1200,
+        height: 630,
+        alt: "baneoff — сведение и мастеринг",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: content.ru.meta.title,
     description: content.ru.meta.description,
+        images: ["/og-image.png"],          // ← для Twitter тоже отдельно
   },
   robots: {
     index: true,
