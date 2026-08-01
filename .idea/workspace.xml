@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 3">
-      <change afterPath="$PROJECT_DIR$/public/sfx/fl-studio-startup.mp3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/admin/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/AdminDashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/blog/BlogList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/blog/BlogList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/blog/BlogPostBody.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/blog/BlogPostBody.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/effects/PortfolioBackdrop.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/effects/PortfolioBackdrop.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/providers/Providers.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/providers/Providers.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/site.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/site.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/i18n/content.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/i18n/content.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,6 +60,7 @@
       <recent name="H:\lebedev" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="H:\lebedev\public\sfx" />
       <recent name="H:\lebedev\public" />
       <recent name="H:\lebedev\og-image.png" />
     </key>
@@ -112,7 +106,7 @@
       <workItem from="1785510438464" duration="2223000" />
       <workItem from="1785537967892" duration="1178000" />
       <workItem from="1785570943842" duration="1169000" />
-      <workItem from="1785588463096" duration="1094000" />
+      <workItem from="1785588463096" duration="2174000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -306,7 +300,39 @@
       <option name="project" value="LOCAL" />
       <updated>1785588834266</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="patch 3">
+      <option name="closed" value="true" />
+      <created>1785590333649</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1785590333649</updated>
+    </task>
+    <task id="LOCAL-00026" summary="patch 3">
+      <option name="closed" value="true" />
+      <created>1785590796589</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1785590796589</updated>
+    </task>
+    <task id="LOCAL-00027" summary="patch 3">
+      <option name="closed" value="true" />
+      <created>1785591014055</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1785591014055</updated>
+    </task>
+    <task id="LOCAL-00028" summary="patch 3">
+      <option name="closed" value="true" />
+      <created>1785591118523</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1785591118523</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

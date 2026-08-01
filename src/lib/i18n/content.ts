@@ -5,7 +5,7 @@ export const content = {
     meta: {
       title: "baneoff — сведение и мастеринг треков",
       description:
-        "Даниил Лебедев (baneoff) — инженер сведения и мастеринга. 6+ лет опыта, 20+ завершённых релизов для инди-артистов и игровых проектов. Обсудим ваш трек.",
+        "Даниил Лебедев (baneoff) — инженер сведения и мастеринга. 6+ лет опыта, 20+ завершённых релизов для инди-артистов. Обсудим ваш трек.",
     },
     nav: {
       about: "Обо мне",
@@ -35,7 +35,7 @@ export const content = {
       line2: "можно доверить",
       line3: "релиз.",
       subheadline:
-        "Свожу и мастерю треки для инди-артистов и игровых проектов уже 6 лет. Чисто, стабильно, без лишнего шума в процессе.",
+        "Свожу и мастерю треки для инди-артистов. Чисто, стабильно, без лишнего шума в процессе.",
       ctaPrimary: "Обсудить проект",
       ctaSecondary: "Послушать работы",
       status: "открыт для проектов",
@@ -44,7 +44,7 @@ export const content = {
     about: {
       label: "01 — Обо мне",
       headline: "Свожу музыку.\nСлышу баланс.",
-      body: "Инженер сведения и мастеринга. Шесть лет в продакшене, больше двадцати завершённых проектов — от инди-артистов до игровых саундтреков. Не гонюсь за трендами: делаю чисто, стабильно и без лишнего шума.",
+      body: "Инженер сведения и мастеринга. Шесть лет в продакшене, больше двадцати завершённых проектов. Не гонюсь за трендами: делаю чисто, стабильно и без лишнего шума.",
       highlightsLabel: "Коротко",
       highlights: [
         "От демо до релиза — полный цикл сведения и мастеринга",
@@ -163,7 +163,7 @@ export const content = {
       line2: "trust with",
       line3: "your release.",
       subheadline:
-        "I mix and master tracks for indie artists and game projects. Six years in, clean and consistent — no noise around the process.",
+        "I mix and master tracks for indie artists. Six years in, clean and consistent — no noise around the process.",
       ctaPrimary: "Discuss a project",
       ctaSecondary: "Listen to the work",
       status: "open for projects",
@@ -172,7 +172,7 @@ export const content = {
     about: {
       label: "01 — About",
       headline: "I mix music.\nI hear balance.",
-      body: "Mixing & mastering engineer. Six years in production, twenty-plus completed projects — from indie artists to game soundtracks. No trends chased — just clean, consistent work.",
+      body: "Mixing & mastering engineer. Six years in production, twenty-plus completed projects. No trends chased — just clean, consistent work.",
       highlightsLabel: "In short",
       highlights: [
         "Full-cycle mixing and mastering, from demo to release",
