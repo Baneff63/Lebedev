@@ -33,6 +33,10 @@ export type SiteLinks = {
 export type ToolStackItem = {
   id: string;
   name: string;
+  /** Optional link to the tool's website — makes the item on the 3D
+   * ellipse clickable (opens in a new tab). Left empty, the item is
+   * shown but isn't interactive. */
+  url?: string;
 };
 
 export type BlogPost = {
@@ -61,10 +65,10 @@ export function getDefaultSiteData(): SiteData {
     tracks: [],
     posts: [],
     toolsStack: [
-      { id: "1", name: "FL Studio" },
-      { id: "2", name: "Cubase" },
-      { id: "3", name: "Waves" },
-      { id: "4", name: "Fabfilter" },
+      { id: "1", name: "FL Studio", url: "" },
+      { id: "2", name: "Cubase", url: "" },
+      { id: "3", name: "Waves", url: "" },
+      { id: "4", name: "Fabfilter", url: "" },
     ],
     ru: structuredClone(content.ru) as Content,
     en: structuredClone(content.en) as Content,

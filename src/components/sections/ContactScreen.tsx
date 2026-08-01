@@ -55,15 +55,15 @@ export function ContactScreen() {
   ].filter(Boolean) as { key: string; label: string; href: string; icon: ReactElement }[];
 
   return (
-    <div className="relative mx-auto flex h-full w-full max-w-[1440px] flex-col px-5 md:px-10">
+    <div className="relative mx-auto flex h-full w-full max-w-[1500px] flex-col px-5 md:px-10">
       <div className="shrink-0 pt-6 md:pt-10">
         <p className="text-[11px] uppercase tracking-[0.22em] text-muted">{t.contact.label}</p>
       </div>
 
-      <div className="grid flex-1 grid-cols-1 items-center gap-10 py-6 md:grid-cols-12 md:gap-6">
+      <div className="grid flex-1 grid-cols-1 items-center gap-8 py-4 md:grid-cols-[260px_1fr_260px] md:items-stretch md:gap-6">
         {/* Left — the pitch + primary ways to reach out */}
-        <div className="md:col-span-4">
-          <h1 className="font-display text-[clamp(1.75rem,4vw,3rem)] leading-[1.05] tracking-[-0.02em] text-ink">
+        <div className="md:flex md:flex-col md:justify-center">
+          <h1 className="font-display text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.05] tracking-[-0.02em] text-ink">
             {headlineLines.map((line, i) => (
               <span key={line} className={`block ${i === 1 ? "italic text-accent" : ""}`}>
                 {line}
@@ -113,16 +113,18 @@ export function ContactScreen() {
           </button>
         </div>
 
-        {/* Center — the rotating 3D tools ellipse */}
-        <div className="md:col-span-4">
-          <p className="text-center text-[11px] uppercase tracking-[0.2em] text-muted">
+        {/* Center — the rotating 3D tools ellipse, given real room to breathe */}
+        <div className="flex flex-col items-center">
+          <p className="mb-2 shrink-0 text-center text-[11px] uppercase tracking-[0.2em] text-muted">
             {t.contactPage.toolsLabel}
           </p>
-          <ToolsEllipse tools={tools} radiusX={150} radiusZ={70} />
+          <div className="h-[280px] w-full min-h-0 flex-1 sm:h-[340px] md:h-auto">
+            <ToolsEllipse tools={tools} />
+          </div>
         </div>
 
         {/* Right — socials */}
-        <div className="md:col-span-4 md:justify-self-end">
+        <div className="md:flex md:flex-col md:justify-center md:items-end">
           {socials.length > 0 && (
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted/70 md:text-right">

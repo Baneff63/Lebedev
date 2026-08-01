@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import type { BlogPost, SiteData, Track, TrackCategory, TrackPlatforms } from "@/types/site";
+import type {
+  BlogPost,
+  SiteData,
+  ToolStackItem,
+  Track,
+  TrackCategory,
+  TrackPlatforms,
+} from "@/types/site";
 import type { Locale } from "@/lib/i18n/content";
 
 type Tab = "tracks" | "tools" | "blog" | "content" | "links";
@@ -25,6 +32,10 @@ function emptyPost(): BlogPost {
     ru: { title: "Новый пост", excerpt: "", content: "" },
     en: { title: "New post", excerpt: "", content: "" },
   };
+}
+
+function emptyTool(): ToolStackItem {
+  return { id: newId(), name: "Новый инструмент", url: "" };
 }
 
 const PLATFORM_KEYS: (keyof TrackPlatforms)[] = ["spotify", "appleMusic", "youtube", "soundcloud"];
@@ -153,11 +164,11 @@ export function AdminDashboard() {
     });
   };
 
-  const updateToolName = (index: number, name: string) => {
+  const updateTool = (index: number, patch: Partial<ToolStackItem>) => {
     setData((prev) => {
       if (!prev) return prev;
       const toolsStack = [...prev.toolsStack];
-      toolsStack[index] = { ...toolsStack[index], name };
+      toolsStack[index] = { ...toolsStack[index], ...patch };
       return { ...prev, toolsStack };
     });
   };
@@ -172,16 +183,15 @@ export function AdminDashboard() {
   const addTool = () => {
     setData((prev) => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        toolsStack: [...prev.toolsStack, { id: newId(), name: "Новый инструмент" }],
-      };
+      return { ...prev, toolsStack: [...prev.toolsStack, emptyTool()] };
     });
   };
 
   const updatePostField = (
     index: number,
-    patch: Partial<BlogPost> | { locale: Locale; field: "title" | "excerpt" | "content"; value: string },
+    patch:
+      | Partial<BlogPost>
+      | { locale: Locale; field: "title" | "excerpt" | "content"; value: string },
   ) => {
     setData((prev) => {
       if (!prev) return prev;
@@ -518,20 +528,37 @@ export function AdminDashboard() {
         {tab === "tools" && (
           <div className="max-w-lg space-y-4">
             <p className="text-sm text-muted">
-              Список отображается на странице «Контакт» как плавно вращающийся 3D-эллипс из
-              инструментов твоего стека.
+              Список отображается на странице «Контакт» как вращающийся 3D-эллипс. Если указать
+              ссылку на сайт инструмента — элемент в эллипсе становится кликабельным и открывает
+              её в новой вкладке; без ссылки элемент просто отображается, не реагируя на клик.
             </p>
             {data.toolsStack.map((tool, i) => (
-              <div key={tool.id} className="flex items-center gap-3">
-                <input
-                  className="admin-input"
-                  value={tool.name}
-                  onChange={(e) => updateToolName(i, e.target.value)}
-                />
+              <div key={tool.id} className="space-y-2 border border-ink/10 p-4">
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    Название
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    value={tool.name}
+                    onChange={(e) => updateTool(i, { name: e.target.value })}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    Ссылка на сайт (необязательно)
+                  </span>
+                  <input
+                    className="admin-input mt-1"
+                    placeholder="https://..."
+                    value={tool.url ?? ""}
+                    onChange={(e) => updateTool(i, { url: e.target.value })}
+                  />
+                </label>
                 <button
                   type="button"
                   onClick={() => removeTool(i)}
-                  className="shrink-0 text-[11px] uppercase tracking-[0.12em] text-accent"
+                  className="text-[11px] uppercase tracking-[0.12em] text-accent"
                 >
                   Удалить
                 </button>
@@ -731,40 +758,6 @@ export function AdminDashboard() {
             </section>
 
             <section>
-              <h2 className="mb-4 font-display text-xl">About</h2>
-              <label className="block">
-                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                  headline (\n для переноса)
-                </span>
-                <textarea
-                  className="admin-textarea mt-1"
-                  value={c.about.headline}
-                  onChange={(e) => patchLocale("about.headline", e.target.value)}
-                />
-              </label>
-              <label className="mt-4 block">
-                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                  body
-                </span>
-                <textarea
-                  className="admin-textarea mt-1"
-                  value={c.about.body}
-                  onChange={(e) => patchLocale("about.body", e.target.value)}
-                />
-              </label>
-              <label className="mt-4 block">
-                <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
-                  ключевые пункты (по одному на строку)
-                </span>
-                <textarea
-                  className="admin-textarea mt-1"
-                  value={c.about.highlights.join("\n")}
-                  onChange={(e) => patchLocaleList("about.highlights", e.target.value)}
-                />
-              </label>
-            </section>
-
-            <section>
               <h2 className="mb-4 font-display text-xl">Portfolio</h2>
               <label className="block">
                 <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
@@ -889,7 +882,8 @@ export function AdminDashboard() {
                 />
               </label>
               <p className="mt-2 text-[12px] text-muted">
-                Сам список инструментов редактируется во вкладке «Инструменты».
+                Сам список инструментов и ссылки на их сайты редактируются во вкладке
+                «Инструменты».
               </p>
             </section>
 
