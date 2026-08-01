@@ -39,7 +39,6 @@ export const content = {
       ctaPrimary: "Обсудить проект",
       ctaSecondary: "Послушать работы",
       status: "открыт для проектов",
-      trust: "20+ завершённых релизов",
     },
     about: {
       label: "01 — Обо мне",
