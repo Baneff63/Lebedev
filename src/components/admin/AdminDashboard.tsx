@@ -46,6 +46,10 @@ const CATEGORY_OPTIONS: { value: TrackCategory; label: string }[] = [
   { value: "personal", label: "Личные работы" },
 ];
 
+// Fallback gradient covers, kept in sync with BlogList.tsx — used in the
+// preview whenever a post has no uploaded coverImage yet.
+const COVER_CLASSES = ["work-blur-0", "work-blur-1", "work-blur-2", "work-blur-3"];
+
 export function AdminDashboard() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
@@ -56,6 +60,7 @@ export function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadingCoverId, setUploadingCoverId] = useState<string | null>(null);
 
   const checkSession = useCallback(async () => {
     const res = await fetch("/api/admin/session");
@@ -120,6 +125,17 @@ export function AdminDashboard() {
       tracks[trackIndex] = { ...tracks[trackIndex], src };
       return { ...prev, tracks };
     });
+  };
+
+  const uploadCover = async (file: File, postId: string, postIndex: number) => {
+    setUploadingCoverId(postId);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+    setUploadingCoverId(null);
+    if (!res.ok) return;
+    const { src } = await res.json();
+    updatePostField(postIndex, { coverImage: src });
   };
 
   const updateTrack = (index: number, patch: Partial<Track>) => {
@@ -605,6 +621,55 @@ export function AdminDashboard() {
                       onChange={(e) => updatePostField(i, { date: e.target.value })}
                     />
                   </label>
+                </div>
+
+                <div className="mt-5">
+                  <span className="text-[11px] uppercase tracking-[0.15em] text-muted">
+                    Обложка — рекомендуемый размер 1200×675px (16:9). На сайте всегда
+                    обрезается под одну и ту же пропорцию, поэтому исходный размер не
+                    принципиален, но крупная и горизонтальная картинка выглядит лучше всего.
+                  </span>
+                  <div className="mt-2 flex flex-wrap items-center gap-4">
+                    <div className="aspect-[16/9] w-40 shrink-0 overflow-hidden rounded-lg border border-ink/10 bg-ink/5">
+                      {post.coverImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={post.coverImage}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={`h-full w-full ${
+                            COVER_CLASSES[post.coverVariant] ?? COVER_CLASSES[0]
+                          }`}
+                        />
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="cursor-pointer border border-ink/15 px-3 py-2 text-[11px] uppercase tracking-[0.12em] hover:border-accent">
+                        {uploadingCoverId === post.id ? "…" : "Загрузить обложку"}
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) uploadCover(f, post.id, i);
+                          }}
+                        />
+                      </label>
+                      {post.coverImage && (
+                        <button
+                          type="button"
+                          onClick={() => updatePostField(i, { coverImage: undefined })}
+                          className="text-left text-[11px] uppercase tracking-[0.12em] text-accent"
+                        >
+                          Убрать обложку
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {(["ru", "en"] as const).map((l) => (

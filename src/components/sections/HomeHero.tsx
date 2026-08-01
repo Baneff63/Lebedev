@@ -5,6 +5,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { useLocale, useApp } from "@/context/LocaleContext";
 import { Magnetic } from "@/components/ui/Magnetic";
+import { AmbientEqualizerField } from "@/components/effects/AmbientEqualizerField";
 
 export function HomeHero() {
   const { t } = useLocale();
@@ -31,6 +32,10 @@ export function HomeHero() {
       className="relative mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-8 md:grid-cols-12 md:items-center"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 grid-bg opacity-40" aria-hidden />
+      {/* Subtle, continuously "filling" equalizer field along the bottom —
+          decorative texture matching the site's audio-engineering theme,
+          intentionally muted so it never competes with the hero text. */}
+      <AmbientEqualizerField />
 
       <div className="md:col-span-1">
         <p className="hh-eyebrow text-[11px] uppercase tracking-[0.25em] text-muted [writing-mode:vertical-lr] md:rotate-180">

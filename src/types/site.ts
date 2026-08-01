@@ -44,7 +44,15 @@ export type BlogPost = {
   slug: string;
   date: string; // ISO yyyy-mm-dd
   published: boolean;
+  /** Fallback gradient cover, used only when coverImage isn't set. */
   coverVariant: 0 | 1 | 2 | 3;
+  /**
+   * Optional uploaded cover image URL (Vercel Blob). Always displayed at
+   * a fixed 16:9 aspect ratio with object-cover, so any uploaded image —
+   * regardless of its original dimensions — looks consistent across the
+   * blog list and post page. Recommended source size: 1200×675px.
+   */
+  coverImage?: string;
   ru: { title: string; excerpt: string; content: string };
   en: { title: string; excerpt: string; content: string };
 };

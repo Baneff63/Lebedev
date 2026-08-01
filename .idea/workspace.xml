@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 2.2" />
+    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 3">
+      <change afterPath="$PROJECT_DIR$/public/sfx/fl-studio-startup.mp3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/admin/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/AdminDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/blog/BlogList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/blog/BlogList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/blog/BlogPostBody.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/blog/BlogPostBody.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/effects/PortfolioBackdrop.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/effects/PortfolioBackdrop.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/providers/Providers.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/providers/Providers.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/site.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/site.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -102,6 +112,7 @@
       <workItem from="1785510438464" duration="2223000" />
       <workItem from="1785537967892" duration="1178000" />
       <workItem from="1785570943842" duration="1169000" />
+      <workItem from="1785588463096" duration="1094000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -279,7 +290,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785571006267</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="patch 3">
+      <option name="closed" value="true" />
+      <created>1785588531288</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1785588531288</updated>
+    </task>
+    <task id="LOCAL-00024" summary="patch 3">
+      <option name="closed" value="true" />
+      <created>1785588834266</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1785588834266</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -306,6 +333,7 @@
     <MESSAGE value="patch 2.1 analyzer upd" />
     <MESSAGE value="patch 2.1 opengraph upd" />
     <MESSAGE value="patch 2.2" />
-    <option name="LAST_COMMIT_MESSAGE" value="patch 2.2" />
+    <MESSAGE value="patch 3" />
+    <option name="LAST_COMMIT_MESSAGE" value="patch 3" />
   </component>
 </project>

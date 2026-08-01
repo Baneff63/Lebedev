@@ -7,6 +7,7 @@ import { PlayerProvider } from "@/context/PlayerContext";
 import { SmoothScroll } from "./SmoothScroll";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { Loader } from "@/components/ui/Loader";
+import { StartupSound } from "@/components/effects/StartupSound";
 import { FixedPlayer } from "@/components/player/FixedPlayer";
 
 function PlayerShell({ children }: { children: ReactNode }) {
@@ -36,6 +37,9 @@ function AppShell({ children }: { children: ReactNode }) {
   return (
     <>
       {!isLoaded && <Loader />}
+      {/* Проигрывает звук "запуска студии" один раз, сразу после того как
+          Loader вызовет setLoaded(true). См. StartupSound.tsx. */}
+      <StartupSound />
       <CustomCursor />
       <div
         className="site-shell transition-opacity duration-300"

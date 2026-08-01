@@ -2,8 +2,26 @@
 
 import Link from "next/link";
 import { useLocale } from "@/context/LocaleContext";
+import type { BlogPost } from "@/types/site";
 
 const COVER_CLASSES = ["work-blur-0", "work-blur-1", "work-blur-2", "work-blur-3"];
+
+/**
+ * Cover box for a post: shows the uploaded image (object-cover, so any
+ * source size fills the box cleanly) when present, otherwise falls back
+ * to the existing gradient variant. Always rendered inside a fixed
+ * aspect-ratio wrapper by the caller, so covers stay visually consistent
+ * regardless of which posts have real images.
+ */
+function PostCover({ post, className = "" }: { post: BlogPost; className?: string }) {
+  if (post.coverImage) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={post.coverImage} alt="" className={`h-full w-full object-cover ${className}`} />;
+  }
+  return (
+    <div className={`h-full w-full ${COVER_CLASSES[post.coverVariant] ?? COVER_CLASSES[0]} ${className}`} />
+  );
+}
 
 export function BlogList() {
   const { t, locale, siteData } = useLocale();
@@ -29,11 +47,8 @@ export function BlogList() {
         data-cursor
         className="group relative flex min-h-[260px] flex-col overflow-hidden rounded-2xl border border-ink/10 transition-colors hover:border-accent/40 md:col-span-7"
       >
-        <div
-          className={`relative h-[42%] min-h-[140px] ${
-            COVER_CLASSES[featured.coverVariant] ?? COVER_CLASSES[0]
-          }`}
-        >
+        <div className="relative aspect-[16/9] min-h-[140px] w-full shrink-0 overflow-hidden">
+          <PostCover post={featured} />
           <span className="absolute top-4 left-4 rounded-full border border-on-dark/25 bg-paper/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-on-dark backdrop-blur-sm">
             {t.blog.publishedOn} {new Date(featured.date).toLocaleDateString(locale)}
           </span>
@@ -62,9 +77,12 @@ export function BlogList() {
                 key={post.id}
                 href={`/blog/${post.slug}`}
                 data-cursor
-                className="group flex items-start justify-between gap-4 py-5 first:pt-0"
+                className="group flex items-start gap-4 py-5 first:pt-0"
               >
-                <div className="min-w-0">
+                <div className="aspect-[16/9] w-24 shrink-0 overflow-hidden rounded-lg border border-ink/8 sm:w-28">
+                  <PostCover post={post} />
+                </div>
+                <div className="min-w-0 flex-1">
                   <p className="text-[10px] uppercase tracking-[0.14em] text-muted/60">
                     {new Date(post.date).toLocaleDateString(locale)}
                   </p>

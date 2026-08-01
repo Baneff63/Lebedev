@@ -1,3 +1,5 @@
+import { AmbientEqualizerField } from "./AmbientEqualizerField";
+
 export function PortfolioBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
@@ -13,6 +15,11 @@ export function PortfolioBackdrop() {
       />
 
       <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-ink/[0.04]" />
+
+      {/* Subtle, continuously "filling" equalizer field along the bottom —
+          decorative texture that matches the site's audio-engineering
+          theme without competing with the grid content above it. */}
+      <AmbientEqualizerField />
 
       <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 select-none font-display text-[clamp(6rem,18vw,14rem)] leading-none tracking-[-0.04em] text-ink/[0.025] italic">
         work
