@@ -47,7 +47,14 @@ export function AmbientEqualizerField({ className = "" }: AmbientEqualizerFieldP
 
   return (
     <div
-      className={`pointer-events-none absolute inset-x-0 bottom-0 -z-10 flex h-[34%] items-end justify-between gap-[2px] opacity-[0.05] ${className}`}
+      // Fixed via vh/clamp rather than a % height: this field is used
+      // inside containers whose own height is intrinsic/auto (e.g. the
+      // home hero grid), and percentage heights resolve to 0 against an
+      // auto-height parent — which made the bars silently collapse right
+      // after layout settled. vh is always resolvable against the
+      // viewport, so it stays visible regardless of the parent's sizing.
+      className={`pointer-events-none absolute inset-x-0 bottom-0 -z-10 flex items-end justify-between gap-[2px] opacity-[0.05] ${className}`}
+      style={{ height: "clamp(90px, 20vh, 220px)" }}
       aria-hidden
     >
       {Array.from({ length: BAR_COUNT }).map((_, i) => (
