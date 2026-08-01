@@ -19,9 +19,12 @@ type ToolsEllipseProps = {
  * "far" edge recede (smaller, faded, slightly soft) — which is what
  * actually reads as volume instead of a flat ring of equally-sized tags.
  *
- * Hovering the whole stage pauses the rotation (so a user can actually aim
- * for a pill instead of chasing a moving target), and any item with a
- * `url` set in the CMS becomes a real link that opens the tool's site.
+ * Only the single item currently at the front of the orbit is
+ * interactive at any given moment (pointer-events are toggled per item,
+ * every frame, based on depth) — so hovering pauses the rotation, and
+ * opens the tool's site, only for that centered/front item, not for the
+ * whole ellipse area. Every tool cycles through the front position as the
+ * ring turns, so all links stay reachable, just not all at once.
  */
 export function ToolsEllipse({ tools, className = "" }: ToolsEllipseProps) {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -55,6 +58,9 @@ export function ToolsEllipse({ tools, className = "" }: ToolsEllipseProps) {
     const tick = () => {
       if (!pausedRef.current) angleRef.current += 0.0022;
 
+      let frontIndex = 0;
+      let frontDepth = -1;
+
       tools.forEach((_, i) => {
         const theta = angleRef.current + (i / n) * Math.PI * 2;
         const x = Math.cos(theta) * radiusX;
@@ -62,6 +68,11 @@ export function ToolsEllipse({ tools, className = "" }: ToolsEllipseProps) {
         // 0 = far edge of the orbit (small, faint, behind), 1 = near edge
         // (large, sharp, in front) — this is the whole "volume" illusion.
         const depth = (Math.sin(theta) + 1) / 2;
+        if (depth > frontDepth) {
+          frontDepth = depth;
+          frontIndex = i;
+        }
+
         const scale = 0.52 + depth * 0.72;
         const opacity = 0.24 + depth * 0.76;
         const blur = (1 - depth) * 1.8;
@@ -73,6 +84,14 @@ export function ToolsEllipse({ tools, className = "" }: ToolsEllipseProps) {
           el.style.filter = blur > 0.05 ? `blur(${blur}px)` : "none";
           el.style.zIndex = String(Math.round(depth * 100) + 10);
         }
+      });
+
+      // Only the item currently at the front of the orbit can receive
+      // pointer events (hover-to-pause, click-through) — everything else
+      // lets the cursor pass through it.
+      tools.forEach((_, i) => {
+        const el = cardRefs.current[i];
+        if (el) el.style.pointerEvents = i === frontIndex ? "auto" : "none";
       });
 
       raf = requestAnimationFrame(tick);
@@ -94,16 +113,7 @@ export function ToolsEllipse({ tools, className = "" }: ToolsEllipseProps) {
         aria-hidden
       />
 
-      <div
-        ref={stageRef}
-        className="relative h-full w-full"
-        onMouseEnter={() => {
-          pausedRef.current = true;
-        }}
-        onMouseLeave={() => {
-          pausedRef.current = false;
-        }}
-      >
+      <div ref={stageRef} className="relative h-full w-full">
         {/* Faint orbit-path guide, sized to match the actual travel path —
             a subtle but effective cue that the pills are moving along a
             real track, not just drifting. */}
@@ -127,6 +137,12 @@ export function ToolsEllipse({ tools, className = "" }: ToolsEllipseProps) {
               cardRefs.current[i] = el;
             }}
             className="absolute top-1/2 left-1/2 will-change-transform"
+            onMouseEnter={() => {
+              pausedRef.current = true;
+            }}
+            onMouseLeave={() => {
+              pausedRef.current = false;
+            }}
           >
             {tool.url ? (
               <a
