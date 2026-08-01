@@ -1,34 +1,15 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import Lenis from "lenis";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { ReactNode } from "react";
 
-gsap.registerPlugin(ScrollTrigger);
-
+/**
+ * The site no longer scrolls at the page level (each page is a fixed
+ * 100dvh "app shell" — see .app-shell-main in globals.css), so Lenis'
+ * document-level smooth-scroll has nothing left to manage. Keeping the
+ * component (rather than removing it from Providers) means we can bring
+ * smooth scrolling back for a specific page later just by re-enabling it
+ * here, without touching the provider tree.
+ */
 export function SmoothScroll({ children }: { children: ReactNode }) {
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    lenis.on("scroll", ScrollTrigger.update);
-
-    const raf = (time: number) => {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    };
-    const rafId = requestAnimationFrame(raf);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return <>{children}</>;
 }

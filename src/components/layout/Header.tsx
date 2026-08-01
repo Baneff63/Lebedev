@@ -21,18 +21,22 @@ export function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 z-50 w-full">
-      <div className="mx-auto flex items-center justify-between px-5 py-6 md:px-10 md:py-8">
-        <Magnetic strength={0.25}>
-          <Link href="/" data-cursor>
-            <ScrambleText
-              text="baneoff"
-              className="font-display text-sm tracking-[0.08em] text-ink uppercase"
-            />
-          </Link>
-        </Magnetic>
+    <header className="fixed top-0 left-0 z-50 h-20 w-full md:h-24">
+      <div className="mx-auto grid h-full w-full max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 md:px-10">
+        <div className="justify-self-start">
+          <Magnetic strength={0.25}>
+            <Link href="/" data-cursor>
+              <ScrambleText
+                text="baneoff"
+                className="font-display text-sm tracking-[0.08em] text-ink uppercase"
+              />
+            </Link>
+          </Magnetic>
+        </div>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        {/* Centered as its own grid column, so it's truly centered
+            regardless of how wide the logo or the right-hand controls are. */}
+        <nav className="hidden items-center gap-8 justify-self-center md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -47,7 +51,7 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-5 md:gap-6">
+        <div className="flex items-center justify-self-end gap-5 md:gap-6">
           <LiveClock />
           <ThemeToggle />
           <LanguageToggle />

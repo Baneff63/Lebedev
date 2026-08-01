@@ -17,6 +17,9 @@ export function GrainOverlay() {
   );
 }
 
+// Kept for reuse (e.g. inside an internally-scrolling panel), but no longer
+// rendered by default: pages don't scroll as a whole anymore, so a
+// window-scroll progress bar has nothing meaningful to report.
 export function ScrollProgress() {
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +52,6 @@ export function GlobalEffects() {
   return (
     <>
       <GrainOverlay />
-      <ScrollProgress />
     </>
   );
 }

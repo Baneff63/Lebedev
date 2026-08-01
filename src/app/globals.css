@@ -51,6 +51,9 @@
   --shadow-card: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
     0 12px 32px color-mix(in srgb, var(--ink) 6%, transparent);
   --section-py: clamp(4rem, 8vw, 8rem);
+
+  /* App-shell layout (no-scroll pages) */
+  --footer-bar-height: 56px;
 }
 
 @keyframes marquee {
@@ -137,12 +140,15 @@ body {
   overflow-x: hidden;
 }
 
-body:has(.fixed-player) .site-shell {
-  padding-bottom: var(--player-height);
+/* App-shell main: every public page reserves space for the fixed footer
+   bar (or the audio player, when tracks exist) so the page itself never
+   needs to scroll — only inner content panels (lists, grids) do. */
+.app-shell-main {
+  padding-bottom: var(--footer-bar-height);
 }
 
-body:has(.fixed-player) .studio-hud {
-  bottom: calc(var(--player-height) + 1rem);
+body:has(.fixed-player) .app-shell-main {
+  padding-bottom: var(--player-height);
 }
 
 body.custom-cursor-active,
@@ -271,6 +277,35 @@ html.custom-cursor-active * {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Slim, unobtrusive scrollbar for internal content panels (portfolio grid,
+   blog list, blog post body, modals) — the page itself never scrolls, but
+   these panels can when their content grows. */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink) 20%, transparent) transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 999px;
+}
+
+.studio-hud {
+  bottom: calc(var(--footer-bar-height) + 1rem);
+}
+
+body:has(.fixed-player) .studio-hud {
+  bottom: calc(var(--player-height) + 1rem);
 }
 
 .admin-input {

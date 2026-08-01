@@ -3,7 +3,19 @@
 import { useEffect, useRef } from "react";
 import type { ToolStackItem } from "@/types/site";
 
-export function ToolsEllipse({ tools }: { tools: ToolStackItem[] }) {
+type ToolsEllipseProps = {
+  tools: ToolStackItem[];
+  radiusX?: number;
+  radiusZ?: number;
+  className?: string;
+};
+
+export function ToolsEllipse({
+  tools,
+  radiusX = 190,
+  radiusZ = 90,
+  className = "",
+}: ToolsEllipseProps) {
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const angleRef = useRef(0);
 
@@ -11,8 +23,6 @@ export function ToolsEllipse({ tools }: { tools: ToolStackItem[] }) {
     if (tools.length === 0) return;
     let raf = 0;
     const n = tools.length;
-    const radiusX = 210;
-    const radiusZ = 100;
 
     const tick = () => {
       angleRef.current += 0.003;
@@ -33,13 +43,13 @@ export function ToolsEllipse({ tools }: { tools: ToolStackItem[] }) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [tools]);
+  }, [tools, radiusX, radiusZ]);
 
   if (tools.length === 0) return null;
 
   return (
     <div
-      className="relative mx-auto h-[280px] w-full max-w-[560px]"
+      className={`relative mx-auto h-[240px] w-full max-w-[460px] ${className}`}
       style={{ perspective: "900px" }}
       aria-label="Инструменты"
     >
@@ -53,7 +63,7 @@ export function ToolsEllipse({ tools }: { tools: ToolStackItem[] }) {
             ref={(el) => {
               itemRefs.current[i] = el;
             }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-ink/12 bg-paper px-5 py-2.5 text-[13px] tracking-[0.04em] whitespace-nowrap text-ink shadow-[var(--shadow-card)]"
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-ink/12 bg-paper px-4 py-2 text-[12px] tracking-[0.04em] whitespace-nowrap text-ink shadow-[var(--shadow-card)]"
           >
             {tool.name}
           </div>

@@ -11,7 +11,6 @@ const EQ_BAR_COUNT = 16;
 
 function CardEqualizer({ playing, seed }: { playing: boolean; seed: number }) {
   const barsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const rafRef = useRef(0);
 
   useEffect(() => {
     const idle = Array.from({ length: EQ_BAR_COUNT }, (_, i) =>
@@ -85,8 +84,8 @@ export function PortfolioGrid() {
   };
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex h-full flex-col">
+      <div className="flex shrink-0 flex-wrap gap-2">
         {tabs.map((tItem) => (
           <button
             key={tItem.id}
@@ -104,64 +103,68 @@ export function PortfolioGrid() {
         ))}
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-ink/12 py-16 text-center">
-          <p className="font-display text-xl italic text-muted">{t.work.emptyTitle}</p>
-          <p className="mt-2 text-[13px] text-muted/70">{t.work.emptyBody}</p>
-        </div>
-      ) : (
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((track: Track) => {
-            const globalIndex = tracks.findIndex((tr) => tr.id === track.id);
-            const active = globalIndex === currentIndex;
-            const activePlaying = active && isPlaying;
+      <div className="thin-scrollbar mt-6 min-h-0 flex-1 overflow-y-auto pr-1 pb-2">
+        {filtered.length === 0 ? (
+          <div className="flex h-full min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-ink/12 text-center">
+            <div>
+              <p className="font-display text-xl italic text-muted">{t.work.emptyTitle}</p>
+              <p className="mt-2 text-[13px] text-muted/70">{t.work.emptyBody}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((track: Track) => {
+              const globalIndex = tracks.findIndex((tr) => tr.id === track.id);
+              const active = globalIndex === currentIndex;
+              const activePlaying = active && isPlaying;
 
-            return (
-              <TiltCard key={track.id}>
-                <div
-                  className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
-                    active
-                      ? "border-accent/50 bg-accent/[0.04]"
-                      : "border-ink/10 hover:border-ink/25"
-                  }`}
-                >
+              return (
+                <TiltCard key={track.id}>
                   <div
-                    className="relative flex h-28 items-center justify-center overflow-hidden"
-                    style={{ background: "linear-gradient(160deg, #211e1a 0%, #131110 100%)" }}
+                    className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
+                      active
+                        ? "border-accent/50 bg-accent/[0.04]"
+                        : "border-ink/10 hover:border-ink/25"
+                    }`}
                   >
-                    <CardEqualizer playing={activePlaying} seed={globalIndex + 1} />
-                    <button
-                      type="button"
-                      onClick={() => handleClick(globalIndex)}
-                      data-cursor
-                      className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
+                    <div
+                      className="relative flex h-28 items-center justify-center overflow-hidden"
+                      style={{ background: "linear-gradient(160deg, #211e1a 0%, #131110 100%)" }}
                     >
-                      {activePlaying ? "❙❙" : "▶"}
-                    </button>
-                  </div>
+                      <CardEqualizer playing={activePlaying} seed={globalIndex + 1} />
+                      <button
+                        type="button"
+                        onClick={() => handleClick(globalIndex)}
+                        data-cursor
+                        className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-on-dark/30 bg-paper/10 text-on-dark backdrop-blur-sm transition-transform hover:scale-105 hover:border-accent hover:bg-accent hover:text-paper"
+                      >
+                        {activePlaying ? "❙❙" : "▶"}
+                      </button>
+                    </div>
 
-                  <div className="flex flex-1 flex-col gap-2 p-5">
-                    <p
-                      className={`truncate font-display text-lg ${
-                        active ? "text-accent" : "text-ink"
-                      }`}
-                    >
-                      {track.title}
-                    </p>
-                    <p className="truncate text-[11px] uppercase tracking-[0.14em] text-muted">
-                      {track.artist}
-                      {track.genre ? ` · ${track.genre}` : ""}
-                    </p>
-                    <span className="mt-auto pt-2 text-[11px] tabular-nums text-muted">
-                      {active ? `${formatTime(currentTime)} / ${formatTime(duration)}` : ""}
-                    </span>
+                    <div className="flex flex-1 flex-col gap-2 p-5">
+                      <p
+                        className={`truncate font-display text-lg ${
+                          active ? "text-accent" : "text-ink"
+                        }`}
+                      >
+                        {track.title}
+                      </p>
+                      <p className="truncate text-[11px] uppercase tracking-[0.14em] text-muted">
+                        {track.artist}
+                        {track.genre ? ` · ${track.genre}` : ""}
+                      </p>
+                      <span className="mt-auto pt-2 text-[11px] tabular-nums text-muted">
+                        {active ? `${formatTime(currentTime)} / ${formatTime(duration)}` : ""}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </TiltCard>
-            );
-          })}
-        </div>
-      )}
+                </TiltCard>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ export function BlogPostBody({ post }: { post: BlogPost }) {
 
   return (
     <div>
-      <p className="mt-8 text-[11px] uppercase tracking-[0.14em] text-muted">
+      <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-muted">
         {new Date(post.date).toLocaleDateString(locale)}
       </p>
       <h1 className="mt-3 font-display text-[clamp(1.75rem,4.5vw,3rem)] leading-[1.1] tracking-[-0.02em] text-ink">

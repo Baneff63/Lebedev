@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { SiteFooterBar } from "@/components/layout/SiteFooterBar";
 import { readSiteData } from "@/lib/site-data";
 import { BlogPostBody } from "@/components/blog/BlogPostBody";
 
@@ -18,18 +18,25 @@ export default async function BlogPostPage({
   return (
     <>
       <Header />
-      <main className="px-5 pt-32 pb-20 md:px-10 md:pt-40 md:pb-32">
-        <article className="mx-auto w-full max-w-[720px]">
-          <Link
-            href="/blog"
-            className="text-[11px] uppercase tracking-[0.14em] text-muted hover:text-accent"
-          >
-            ← Все посты
-          </Link>
-          <BlogPostBody post={post} />
-        </article>
+
+      <main className="app-shell-main h-dvh overflow-hidden pt-20 md:pt-24">
+        <div className="mx-auto flex h-full w-full max-w-[720px] flex-col px-5 md:px-10">
+          <div className="shrink-0 pt-6 md:pt-10">
+            <Link
+              href="/blog"
+              className="text-[11px] uppercase tracking-[0.14em] text-muted hover:text-accent"
+            >
+              ← Все посты
+            </Link>
+          </div>
+
+          <div className="thin-scrollbar mt-4 min-h-0 flex-1 overflow-y-auto pb-10">
+            <BlogPostBody post={post} />
+          </div>
+        </div>
       </main>
-      <Footer />
+
+      <SiteFooterBar />
     </>
   );
 }
