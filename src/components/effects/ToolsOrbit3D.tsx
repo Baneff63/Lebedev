@@ -45,6 +45,12 @@ export function ToolsOrbit3D({ tools, className = "" }: ToolsOrbit3DProps) {
   const n = tools.length;
   const step = n > 0 ? 360 / n : 0;
 
+  // Card box size — kept in sync with the marginLeft/marginTop centering
+  // offsets below. Slightly smaller than before so the carousel reads
+  // cleanly on narrow phone screens too.
+  const CARD_W = 116;
+  const CARD_H = 40;
+
   // Deterministic per-particle values so they don't reshuffle on re-render.
   const particles = useMemo(
     () =>
@@ -64,8 +70,8 @@ export function ToolsOrbit3D({ tools, className = "" }: ToolsOrbit3DProps) {
     const ro = new ResizeObserver((entries) => {
       const w = entries[0]?.contentRect.width ?? 0;
       // Radius scales with stage width but is capped so cards never crowd
-      // together on very wide screens or collapse on narrow ones.
-      setRadius(Math.min(Math.max(w * 0.34, 110), 260));
+      // together on very wide screens or collapse/overflow on narrow ones.
+      setRadius(Math.min(Math.max(w * 0.32, 78), 240));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -207,7 +213,7 @@ export function ToolsOrbit3D({ tools, className = "" }: ToolsOrbit3DProps) {
       />
 
       <div
-        className="absolute top-1/2 left-1/2"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         style={{
           transformStyle: "preserve-3d",
           cursor: dragging ? "grabbing" : "grab",
@@ -224,8 +230,26 @@ export function ToolsOrbit3D({ tools, className = "" }: ToolsOrbit3DProps) {
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
-              className="absolute top-1/2 left-1/2 will-change-transform"
-              style={{ transformStyle: "preserve-3d", marginLeft: "-70px", marginTop: "-22px" }}
+              // Bug fix: these used to be anchored with `top-1/2 left-1/2`
+              // (i.e. 50% of the *parent's* box). The parent here
+              // (`ringRef`) has no in-flow content of its own — every card
+              // is `position: absolute`, which is exactly what makes an
+              // element's intrinsic size collapse to 0 in a shrink-to-fit
+              // box — so "50%" was resolving to 50% of a 0×0 box, i.e. 0.
+              // Every card ended up anchored at the ring's literal
+              // top-left corner instead of its center, which is what read
+              // as the carousel "not working"/cards overlapping in a
+              // corner. Anchoring at 0,0 sidesteps the issue entirely: the
+              // actual centering + depth positioning is done purely via
+              // the `rotateY/translateZ` transform set in the animation
+              // loop below, which doesn't depend on the parent's box size
+              // at all.
+              className="absolute top-0 left-0 will-change-transform"
+              style={{
+                transformStyle: "preserve-3d",
+                marginLeft: `-${CARD_W / 2}px`,
+                marginTop: `-${CARD_H / 2}px`,
+              }}
             >
               {tool.url ? (
                 <a
@@ -238,12 +262,16 @@ export function ToolsOrbit3D({ tools, className = "" }: ToolsOrbit3DProps) {
                   onClick={(e) => {
                     if (draggingRef.current) e.preventDefault();
                   }}
-                  className="flex h-11 w-[140px] items-center justify-center rounded-2xl border border-ink/12 bg-paper text-[13px] font-medium whitespace-nowrap text-ink shadow-[var(--shadow-card)] transition-colors hover:border-accent hover:text-accent"
+                  style={{ width: `${CARD_W}px`, height: `${CARD_H}px` }}
+                  className="flex items-center justify-center rounded-2xl border border-ink/12 bg-paper px-3 text-[13px] font-medium whitespace-nowrap text-ink shadow-[var(--shadow-card)] transition-colors hover:border-accent hover:text-accent"
                 >
                   {tool.name}
                 </a>
               ) : (
-                <span className="flex h-11 w-[140px] items-center justify-center rounded-2xl border border-ink/8 bg-paper/85 text-[13px] whitespace-nowrap text-ink/75 shadow-[var(--shadow-card)]">
+                <span
+                  style={{ width: `${CARD_W}px`, height: `${CARD_H}px` }}
+                  className="flex items-center justify-center rounded-2xl border border-ink/8 bg-paper/85 px-3 text-[13px] whitespace-nowrap text-ink/75 shadow-[var(--shadow-card)]"
+                >
                   {tool.name}
                 </span>
               )}

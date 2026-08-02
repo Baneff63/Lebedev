@@ -419,3 +419,68 @@ body:has(.fixed-player) .studio-hud {
     min-height: 40px;
   }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Mobile fix: pages no longer fit / bottom content hidden behind player   */
+/* ---------------------------------------------------------------------- */
+/*
+ * Every page is built as a fixed `100dvh` "app shell" with `overflow:
+ * hidden` (see `.app-shell-main` above + the `h-dvh overflow-hidden`
+ * classes on each page's <main>) and relies on inner panels adding their
+ * own `overflow-y-auto` to scroll. That's fine on desktop where there's
+ * plenty of vertical room, but on phones — shorter viewports, and a good
+ * chunk of that viewport is already spent on the header, the fixed
+ * footer/player bar, and safe-area insets — real content (hero copy,
+ * the contact page's 3-column layout stacked to one column, portfolio
+ * cards, etc.) regularly doesn't fit in what's left, and anything past
+ * the bottom edge was being silently clipped instead of shown, which is
+ * also why elements sitting near the bottom looked hidden behind the
+ * player bar.
+ *
+ * Below `md`, drop the fixed-height/no-scroll approach entirely: the
+ * shell grows with its content and the page scrolls normally, the same
+ * way any ordinary mobile site does. The fixed footer/player bar stays
+ * pinned via `position: fixed` regardless (that's untouched), and the
+ * extra bottom padding here makes sure the last bit of real content
+ * always clears it once scrolled all the way down.
+ */
+@media (max-width: 767.98px) {
+  .app-shell-main {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    padding-bottom: calc(var(--footer-bar-height) + 2rem) !important;
+  }
+
+  body:has(.fixed-player) .app-shell-main {
+    padding-bottom: calc(var(--player-height) + 2rem) !important;
+  }
+
+  /*
+   * A bunch of components were written assuming that fixed-height shell
+   * (chains of `h-full` / `flex-1 min-h-0 overflow-y-auto`) so their own
+   * content would stretch to fill it and scroll internally. With the
+   * shell now auto-height on mobile, let those specific chains relax to
+   * their natural content size too — otherwise a `flex-1` inside a now
+   * auto-height flex column can still resolve to a squashed/zero height
+   * instead of showing everything.
+   *
+   * `[class~="…"]` matches a whole class *token*, not a substring — so
+   * this only targets elements that literally carry the class `h-full`
+   * or `min-h-0` (as authored by the Tailwind chains below), and
+   * deliberately leaves other things alone, e.g. the BPM/key analyzer
+   * modal on the contact page, which uses `max-h-[85vh] overflow-y-auto`
+   * (no `min-h-0`) precisely because it's a real overlay that should
+   * keep scrolling internally rather than merge into page scroll.
+   */
+  .app-shell-main [class~="h-full"] {
+    height: auto !important;
+  }
+
+  .app-shell-main [class~="min-h-0"] {
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex: none !important;
+  }
+}
