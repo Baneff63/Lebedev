@@ -84,7 +84,7 @@ export function PortfolioGrid() {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col overflow-x-hidden">
       <div className="flex shrink-0 flex-wrap gap-2">
         {tabs.map((tItem) => (
           <button
@@ -103,7 +103,19 @@ export function PortfolioGrid() {
         ))}
       </div>
 
-      <div className="thin-scrollbar mt-6 min-h-0 flex-1 overflow-y-auto pr-1 pb-2">
+      {/*
+        IMPORTANT (bug fix): this panel used to only set `overflow-y-auto`.
+        TiltCard applies `perspective(...) rotateY() rotateX() scale(1.02)`
+        on hover, which can make a card's rendered bounding box a fraction
+        of a pixel wider than its layout box. With no `overflow-x` rule the
+        browser defaults to `visible` for the x-axis even though y is
+        `auto`, so that sub-pixel overflow was enough to spawn a horizontal
+        scrollbar at the bottom of the panel on hover. Setting
+        `overflow-x-hidden` here (and `overflow-x-hidden` one level up, on
+        the flex column above) removes the x-axis scrollbar entirely while
+        leaving vertical scrolling untouched.
+      */}
+      <div className="thin-scrollbar mt-6 min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pr-1 pb-2">
         {filtered.length === 0 ? (
           <div className="flex h-full min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-ink/12 text-center">
             <div>
@@ -119,7 +131,7 @@ export function PortfolioGrid() {
               const activePlaying = active && isPlaying;
 
               return (
-                <TiltCard key={track.id}>
+                <TiltCard key={track.id} className="[transform:translateZ(0)]">
                   <div
                     className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-colors ${
                       active

@@ -27,14 +27,23 @@ export function HomeHero() {
   }, [isLoaded]);
 
   return (
+    // `isolate` pins down a stacking context on this element itself, so
+    // any negative-z-index children (grid-bg) are guaranteed to stack
+    // below the rest of this component's content and never escape past
+    // it up to <body> — see AmbientEqualizerField.tsx for the full story
+    // on why that used to make the equalizer vanish after a couple of
+    // seconds on every reload.
     <div
       ref={ref}
-      className="relative mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-8 md:grid-cols-12 md:items-center"
+      className="relative isolate mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-8 md:grid-cols-12 md:items-center"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 grid-bg opacity-40" aria-hidden />
       {/* Subtle, continuously "filling" equalizer field along the bottom —
           decorative texture matching the site's audio-engineering theme,
-          intentionally muted so it never competes with the hero text. */}
+          intentionally muted so it never competes with the hero text. As
+          the first non-absolute-background child in normal paint order,
+          it renders below everything that follows it without needing a
+          z-index of its own. */}
       <AmbientEqualizerField />
 
       <div className="md:col-span-1">

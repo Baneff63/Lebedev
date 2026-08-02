@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { LocaleProvider, useLocale } from "@/context/LocaleContext";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { SmoothScroll } from "./SmoothScroll";
+import { PageTransition } from "./PageTransition";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { Loader } from "@/components/ui/Loader";
 import { StartupSound } from "@/components/effects/StartupSound";
@@ -42,10 +43,10 @@ function AppShell({ children }: { children: ReactNode }) {
       <StartupSound />
       <CustomCursor />
       <div
-        className="site-shell transition-opacity duration-300"
+        className="site-shell isolate transition-opacity duration-300"
         style={{ opacity: isLoaded ? 1 : 0 }}
       >
-        {children}
+        <PageTransition>{children}</PageTransition>
       </div>
     </>
   );

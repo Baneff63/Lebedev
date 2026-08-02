@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from "@/context/LocaleContext";
-import { ToolsEllipse } from "@/components/effects/ToolsEllipse";
+import { ToolsOrbit3D } from "@/components/effects/ToolsOrbit3D";
 
 export function ToolsShowcase() {
   const { t, siteData } = useLocale();
@@ -21,8 +21,8 @@ export function ToolsShowcase() {
             </span>
           ))}
         </h2>
-        <div className="mt-14">
-          <ToolsEllipse tools={tools} />
+        <div className="mt-14 h-[320px] sm:h-[380px]">
+          <ToolsOrbit3D tools={tools} />
         </div>
       </div>
     </section>

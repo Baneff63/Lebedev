@@ -339,3 +339,83 @@ body:has(.fixed-player) .studio-hud {
 .admin-textarea:focus {
   border-color: var(--accent);
 }
+
+/* ---------------------------------------------------------------------- */
+/* Patch additions: mobile nav, orbit particles, touch scrolling, safe-area */
+/* ---------------------------------------------------------------------- */
+
+/* Belt-and-suspenders: guarantees every "app shell" main also establishes
+   its own stacking context, so any negative z-index used for decorative
+   backgrounds (grid-bg, ambient equalizer, portfolio/blog backdrops) can
+   never escape past it and end up hidden behind <body>'s own background —
+   see AmbientEqualizerField.tsx for the full explanation of that bug. */
+.app-shell-main {
+  isolation: isolate;
+  height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
+/* Mobile nav overlay */
+.mobile-nav {
+  overscroll-behavior: contain;
+}
+
+.mobile-nav-link {
+  transition:
+    color 0.3s var(--ease-out-expo),
+    transform 0.35s var(--ease-out-expo),
+    opacity 0.3s var(--ease-out-expo);
+}
+
+/* Smooth momentum scrolling on internally-scrolling panels on iOS */
+.thin-scrollbar,
+.mobile-nav {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Drifting particle field behind the 3D tools orbit (contact page) */
+@keyframes orbit-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate3d(6px, -14px, 0);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.15;
+  }
+}
+
+.orbit-particle {
+  animation-name: orbit-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-particle {
+    animation: none !important;
+  }
+}
+
+/* Small-screen polish: tighter section rhythm, safe-area aware footer/player,
+   and larger tap targets so nothing on the no-scroll app-shell pages feels
+   cramped on a phone. */
+@media (max-width: 640px) {
+  :root {
+    --section-py: clamp(2.5rem, 10vw, 4rem);
+  }
+
+  .site-footer-bar,
+  .fixed-player {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  a[data-cursor],
+  button[data-cursor] {
+    min-height: 40px;
+  }
+}

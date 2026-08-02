@@ -2,7 +2,7 @@ import { AmbientEqualizerField } from "./AmbientEqualizerField";
 
 export function PortfolioBackdrop() {
   return (
-    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 isolate -z-10 overflow-hidden" aria-hidden>
       <div className="grid-bg absolute inset-0 opacity-30" />
 
       <div
