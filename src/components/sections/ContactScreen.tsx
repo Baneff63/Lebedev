@@ -2,7 +2,7 @@
 
 import { useState, type ReactElement } from "react";
 import { useLocale } from "@/context/LocaleContext";
-import { ToolsOrbit3D } from "@/components/effects/ToolsOrbit3D";
+import { ToolsStack } from "@/components/effects/ToolsStack";
 import { Magnetic } from "@/components/ui/Magnetic";
 import { TrackAnalyzer } from "./TrackAnalyzer";
 
@@ -62,7 +62,7 @@ export function ContactScreen() {
 
       <div className="grid flex-1 grid-cols-1 items-center gap-8 py-4 md:grid-cols-[260px_1fr_260px] md:items-stretch md:gap-6">
         {/* Left — the pitch + primary ways to reach out */}
-        <div className="order-2 md:order-1 md:flex md:flex-col md:justify-center">
+        <div className="md:flex md:flex-col md:justify-center">
           <h1 className="font-display text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.05] tracking-[-0.02em] text-ink">
             {headlineLines.map((line, i) => (
               <span key={line} className={`block ${i === 1 ? "italic text-accent" : ""}`}>
@@ -114,17 +114,17 @@ export function ContactScreen() {
         </div>
 
         {/* Center — the interactive 3D tools carousel, given real room to breathe */}
-        <div className="order-1 flex flex-col items-center md:order-2">
+        <div className="flex flex-col items-center">
           <p className="mb-2 shrink-0 text-center text-[11px] uppercase tracking-[0.2em] text-muted">
             {t.contactPage.toolsLabel}
           </p>
-          <div className="h-[280px] w-full min-h-0 flex-1 sm:h-[360px] md:h-auto">
-            <ToolsOrbit3D tools={tools} />
+          <div className="w-full py-2 md:h-[360px] md:min-h-0 md:flex-1 md:py-0">
+            <ToolsStack tools={tools} />
           </div>
         </div>
 
         {/* Right — socials */}
-        <div className="order-3 md:flex md:flex-col md:justify-center md:items-end">
+        <div className="md:flex md:flex-col md:justify-center md:items-end">
           {socials.length > 0 && (
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted/70 md:text-right">

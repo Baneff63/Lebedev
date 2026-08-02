@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 3" />
+    <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 4.5">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/sections/ContactScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/ContactScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/sections/ToolsShowcase.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/ToolsShowcase.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -104,6 +108,8 @@
       <workItem from="1785537967892" duration="1178000" />
       <workItem from="1785570943842" duration="1169000" />
       <workItem from="1785588463096" duration="2371000" />
+      <workItem from="1785662782855" duration="580000" />
+      <workItem from="1785683406185" duration="464000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -337,7 +343,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785591416796</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="patch 4">
+      <option name="closed" value="true" />
+      <created>1785662871166</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1785662871166</updated>
+    </task>
+    <task id="LOCAL-00031" summary="patch 4.5">
+      <option name="closed" value="true" />
+      <created>1785683544805</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1785683544805</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -365,6 +387,8 @@
     <MESSAGE value="patch 2.1 opengraph upd" />
     <MESSAGE value="patch 2.2" />
     <MESSAGE value="patch 3" />
-    <option name="LAST_COMMIT_MESSAGE" value="patch 3" />
+    <MESSAGE value="patch 4" />
+    <MESSAGE value="patch 4.5" />
+    <option name="LAST_COMMIT_MESSAGE" value="patch 4.5" />
   </component>
 </project>
