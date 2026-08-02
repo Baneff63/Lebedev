@@ -95,7 +95,22 @@ export function Header() {
       <div className="mx-auto grid h-16 w-full max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 md:h-24 md:px-10">
         <div className="justify-self-start">
           <Magnetic strength={0.25}>
-            <Link href="/" data-cursor>
+            <Link href="/" data-cursor className="flex items-center gap-2">
+              {/*
+                Landing spot for the Loader's spectrum ring/flash on the
+                very first paint (see Loader.tsx): it measures this dot's
+                real screen position and animates the ring/flash toward
+                it, then the iris-reveal collapses into this exact point
+                instead of the screen center. That makes the dot read as
+                the ring "settling into" a permanent part of the site's
+                UI — a live status indicator that's always here — rather
+                than the loading visual simply switching off.
+              */}
+              <span
+                data-signal-dot
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent animate-blink"
+                aria-hidden
+              />
               <ScrambleText
                 text="baneoff"
                 className="font-display text-sm tracking-[0.08em] text-ink uppercase"

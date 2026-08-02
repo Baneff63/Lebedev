@@ -12,29 +12,29 @@ const STAGE_LABELS: Record<"ru" | "en", string[]> = {
 };
 
 /**
- * Loading screen, take two.
+ * Loading screen.
  *
- * The old version was a flat progress bar + counter — functional, but
- * nothing that would make anyone stop and look. This keeps the same
- * brand/wordmark beat (so it doesn't feel disconnected from the rest of
- * the site) and adds:
+ * FIX (this pass): previously the spectrum ring/flash lived only inside
+ * this fully self-contained overlay — once `AppShell` stopped rendering
+ * `<Loader/>` (on `isLoaded`), the ring simply vanished along with
+ * everything else. It had no relationship to any real element of the
+ * site's UI, so the loading→site handoff read as "turn off the loading
+ * screen", not "the loading screen becomes part of the site".
  *
- * - A real canvas visual behind the copy: a radial "spectrum ring" whose
- *   amplitude is literally driven by the loading progress (0→100), not a
- *   random flicker — it visibly "wakes up" and brightens as loading
- *   completes, then flashes once at 100%.
- * - Staged flavor-text under the counter ("calibrating input" → "warming
- *   up preamps" → "locking sync" → "final check") instead of a static
- *   "loading" label — small detail, but it's the kind of thing that reads
- *   as "someone actually designed this" rather than a stock loader.
- * - The exit is an iris reveal (`clip-path: circle()` growing from the
- *   center) instead of the old slide-up-and-fade. Deliberately
- *   `clip-path`, not `transform`/`scale` — a `transform` left lingering
- *   on an ancestor of the real page would make it the containing block
- *   for any `position: fixed` descendant (breaks things like the contact
- *   page's modal — see PageTransition.tsx for the full story on that
- *   class of bug). `clip-path` doesn't have that side effect, so it's
- *   safe to animate on the whole overlay.
+ * Now, right before the exit sequence starts, the loader looks up the
+ * `[data-signal-dot]` element that lives permanently in the Header (next
+ * to the logo — see Header.tsx) and animates the ring's center + the
+ * flash pulse toward its real on-screen position, then the iris reveal
+ * collapses into that same point instead of a fixed spot near the
+ * screen's vertical center. The ring visually "lands" on the dot, which
+ * is already sitting there in the DOM (just hidden under this overlay),
+ * so when the overlay clips away the accent dot is already exactly where
+ * the ring just was — it reads as one continuous element handing off to
+ * another, not a shutdown.
+ *
+ * If `[data-signal-dot]` isn't found for some reason (e.g. this component
+ * gets reused somewhere without a Header), everything falls back to the
+ * original fixed anchor near the screen's vertical center.
  */
 export function Loader() {
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -45,6 +45,14 @@ export function Loader() {
   const stageRef = useRef<HTMLSpanElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const progressPercentRef = useRef(0);
+
+  // Movable center for the canvas ring — starts at the old fixed spot,
+  // animated toward the header's signal dot right before exit.
+  const centerRef = useRef({ x: 0, y: 0 });
+  // Same point expressed as viewport percentages, used for the flash
+  // pulse (DOM element, positioned in %) and the iris clip-path origin.
+  const anchorPctRef = useRef({ x: 50, y: 50 });
+
   const { setLoaded } = useApp();
   const { locale } = useLocale();
 
@@ -58,12 +66,22 @@ export function Loader() {
     let height = window.innerHeight;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
+    const setDefaultCenter = () => {
+      const y = height / 2 - Math.min(height * 0.06, 48);
+      centerRef.current = { x: width / 2, y };
+      anchorPctRef.current = {
+        x: 50,
+        y: (y / height) * 100,
+      };
+    };
+
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
+      setDefaultCenter();
     };
     resize();
     window.addEventListener("resize", resize);
@@ -80,8 +98,7 @@ export function Loader() {
       ctx.clearRect(0, 0, width, height);
 
       const progress = progressPercentRef.current / 100;
-      const cx = width / 2;
-      const cy = height / 2 - Math.min(height * 0.06, 48);
+      const { x: cx, y: cy } = centerRef.current;
       const baseRadius = Math.min(width, height) * (0.12 + progress * 0.06);
 
       ctx.save();
@@ -115,7 +132,7 @@ export function Loader() {
     };
   }, []);
 
-  // --- main timeline: counter/progress → flash → fade copy → iris reveal ---
+  // --- main timeline: counter/progress → home to signal dot → flash → fade → iris reveal ---
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -151,25 +168,59 @@ export function Loader() {
       },
     })
       .to(progressRef.current, { scaleX: 1, duration: 1.7, ease: "power2.inOut" }, 0)
+      // Locate the header's persistent signal dot and glide the ring's
+      // center + the anchor point (used by the flash and the iris below)
+      // toward its real on-screen position. It's already in the DOM at
+      // this point — just hidden under this overlay — so this is the
+      // moment the ring "finds" the thing it's about to hand off to.
+      .add(() => {
+        const anchor = document.querySelector<HTMLElement>("[data-signal-dot]");
+        if (!anchor) return;
+        const rect = anchor.getBoundingClientRect();
+        const targetX = rect.left + rect.width / 2;
+        const targetY = rect.top + rect.height / 2;
+
+        gsap.to(centerRef.current, {
+          x: targetX,
+          y: targetY,
+          duration: 0.55,
+          ease: "power3.inOut",
+        });
+        gsap.to(anchorPctRef.current, {
+          x: (targetX / window.innerWidth) * 100,
+          y: (targetY / window.innerHeight) * 100,
+          duration: 0.55,
+          ease: "power3.inOut",
+          onUpdate: () => {
+            if (flashRef.current) {
+              flashRef.current.style.left = `${anchorPctRef.current.x}%`;
+              flashRef.current.style.top = `${anchorPctRef.current.y}%`;
+            }
+          },
+        });
+      })
       // A quick, bright pulse right as loading hits 100% — the "signal
-      // locked" moment.
-      .to(flashRef.current, { opacity: 0.9, scale: 1.15, duration: 0.18, ease: "power1.out" })
-      .to(flashRef.current, { opacity: 0, scale: 1.4, duration: 0.5, ease: "power2.out" })
+      // locked" moment — now shrinking down toward the dot's size as it
+      // travels, so it reads as converging into the dot rather than just
+      // flashing in place.
+      .to(flashRef.current, { opacity: 0.9, scale: 0.35, duration: 0.55, ease: "power2.out" }, "<")
+      .to(flashRef.current, { opacity: 0, scale: 0.15, duration: 0.35, ease: "power2.out" })
       // Fade the copy out *before* the iris starts growing, so nothing
       // gets abruptly clipped mid-wipe.
       .to(contentRef.current, { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, "-=0.35")
       // Iris reveal: the visible circle of the overlay shrinks from full
-      // screen coverage down to a vanishing point at the exact spot the
-      // ring/flash just lit up — like a CRT tube powering off, just in
-      // reverse (site "grows in" from the edges toward that point instead
-      // of the picture collapsing away).
+      // screen coverage down to a vanishing point — now at the signal
+      // dot's real position rather than a fixed spot — like a CRT tube
+      // powering off, in reverse, aimed at exactly where the accent dot
+      // is waiting.
       .to(iris, {
         radius: 0,
         duration: 0.85,
         ease: "power4.inOut",
         onUpdate: () => {
           if (overlayRef.current) {
-            overlayRef.current.style.clipPath = `circle(${iris.radius}% at 50% calc(50% - 3rem))`;
+            const { x, y } = anchorPctRef.current;
+            overlayRef.current.style.clipPath = `circle(${iris.radius}% at ${x}% ${y}%)`;
           }
         },
       });
@@ -189,11 +240,18 @@ export function Loader() {
     >
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
 
-      {/* Flash pulse at the moment loading completes */}
+      {/* Flash pulse at the moment loading completes — positioned via
+          left/top (in viewport %) so it can be animated toward the header
+          signal dot's real position; translate(-50%, -50%) keeps it
+          centered on that point regardless of where it currently sits. */}
       <div
         ref={flashRef}
-        className="pointer-events-none absolute top-1/2 left-1/2 h-[36vmin] w-[36vmin] -translate-x-1/2 -translate-y-[calc(50%+3rem)] rounded-full opacity-0"
-        style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }}
+        className="pointer-events-none absolute h-[36vmin] w-[36vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0"
+        style={{
+          left: "50%",
+          top: "calc(50% - 3rem)",
+          background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)",
+        }}
       />
 
       <div ref={contentRef} className="relative flex h-full flex-col justify-between">
