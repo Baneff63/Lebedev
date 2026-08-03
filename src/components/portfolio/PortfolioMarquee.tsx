@@ -1,26 +1,44 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useLocale } from "@/context/LocaleContext";
 import { usePlayer } from "@/context/PlayerContext";
-import type { Track } from "@/types/site";
+import type { Track, TrackCategory } from "@/types/site";
+import { trackCategory } from "@/types/site";
 import { generativeCoverStyle, seedToInt } from "@/lib/generativeCover";
 
 const IDLE_BAR_COUNT = 11;
+// px/frame at ~60fps — deliberately gentle so the rows read as an ambient
+// drift, not a ticker.
+const DRIFT_SPEED = 0.4;
+// How much of the remaining distance-to-center is closed per frame while
+// centering the active card. Lower = smoother/slower settle.
+const CENTER_EASE = 0.1;
+const MOMENTUM_DECAY = 0.94;
+// Total pointer movement (px) below which a press+release is still
+// treated as a click rather than a drag.
+const DRAG_CLICK_THRESHOLD = 6;
 
 /**
  * Equalizer used inside marquee cards.
  *
  * Idle bars are pure CSS (`.eq-bar-idle`, see globals.css) with a
  * per-bar duration/delay derived from the track's own id, so it's
- * deterministic (never reshuffles between renders) and cheap enough to
- * render dozens of times at once across every duplicated marquee clone —
- * no JS animation loop running for cards that aren't actually playing.
+ * deterministic and cheap enough to render across every duplicated
+ * marquee clone with no JS animation loop involved.
  *
  * Only the card that IS the active/playing track swaps to a small
- * rAF-driven animation for a snappier "it's really playing" feel. Since
- * at most one track is ever playing, that's at most a handful of rAF
- * loops (one per visible clone of that one track), never one per card.
+ * rAF-driven animation — tuned deliberately calm (slow interpolation,
+ * infrequent target changes) after the first pass felt too jittery/fast
+ * next to the rest of the site's motion language.
  */
 function MarqueeEqualizer({ playing, seed }: { playing: boolean; seed: number }) {
   const barsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -32,9 +50,9 @@ function MarqueeEqualizer({ playing, seed }: { playing: boolean; seed: number })
         const v = Math.abs(Math.sin(seed * 12.9898 + i * 4.233));
         return {
           min: 0.14 + v * 0.16,
-          max: 0.4 + v * 0.35,
-          duration: 1.1 + ((seed + i * 7) % 9) * 0.18,
-          delay: ((seed * 3 + i * 11) % 20) * 0.07,
+          max: 0.38 + v * 0.3,
+          duration: 1.4 + ((seed + i * 7) % 9) * 0.22,
+          delay: ((seed * 3 + i * 11) % 20) * 0.08,
         };
       }),
     [seed],
@@ -49,10 +67,14 @@ function MarqueeEqualizer({ playing, seed }: { playing: boolean; seed: number })
 
     const tick = () => {
       for (let i = 0; i < IDLE_BAR_COUNT; i++) {
-        if (Math.random() > 0.82) {
-          targets[i] = 0.2 + Math.random() * 0.75;
+        // Much less frequent target changes (was a ~18%/frame chance,
+        // now ~6%) and a slower glide toward each new target (0.09 vs the
+        // original 0.3) — the combination is what actually reads as
+        // "calmer" rather than just "slower".
+        if (Math.random() > 0.94) {
+          targets[i] = 0.22 + Math.random() * 0.5;
         }
-        current[i] += (targets[i] - current[i]) * 0.3;
+        current[i] += (targets[i] - current[i]) * 0.09;
         const el = barsRef.current[i];
         if (el) el.style.transform = `scaleY(${current[i]})`;
       }
@@ -86,7 +108,7 @@ function MarqueeEqualizer({ playing, seed }: { playing: boolean; seed: number })
             className={`w-full origin-bottom rounded-full transition-colors duration-300 ${
               playing ? "bg-accent" : "bg-on-dark/30 eq-bar-idle"
             }`}
-            style={(playing ? playingStyle : idleStyle) as CSSProperties}
+            style={(playing ? playingStyle : idleStyle) as unknown as CSSProperties}
           />
         );
       })}
@@ -101,9 +123,20 @@ type MarqueeCardProps = {
   onClick: () => void;
 };
 
-function MarqueeCard({ track, playing, active, onClick }: MarqueeCardProps) {
+/**
+ * The generated cover (see generativeCover.ts) is rendered as its own
+ * absolutely-positioned layer, a *sibling* of the equalizer/label/button —
+ * not a wrapper around them. The cover style includes a `hue-rotate`
+ * filter for per-track variety; if that filter were applied to the whole
+ * card it would also distort the text and icons sitting on top of it.
+ */
+const MarqueeCard = forwardRef<HTMLButtonElement, MarqueeCardProps>(function MarqueeCard(
+  { track, playing, active, onClick },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onClick}
       data-cursor
@@ -111,8 +144,8 @@ function MarqueeCard({ track, playing, active, onClick }: MarqueeCardProps) {
       className={`group relative h-[112px] w-[172px] shrink-0 overflow-hidden rounded-2xl border text-left transition-colors sm:h-[124px] sm:w-[196px] md:h-[132px] md:w-[220px] ${
         active ? "border-accent/60" : "border-ink/10 hover:border-ink/25"
       }`}
-      style={generativeCoverStyle(track.id)}
     >
+      <div className="absolute inset-0" style={generativeCoverStyle(track.id)} aria-hidden />
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent"
         aria-hidden
@@ -133,7 +166,7 @@ function MarqueeCard({ track, playing, active, onClick }: MarqueeCardProps) {
       </div>
     </button>
   );
-}
+});
 
 type MarqueeRowProps = {
   tracks: Track[];
@@ -143,42 +176,195 @@ type MarqueeRowProps = {
   onCardClick: (trackId: string) => void;
 };
 
+/**
+ * One infinite row. Unlike the first version (a plain CSS `animation`),
+ * this drives its own `transform: translate3d(...)` every frame via rAF,
+ * because three things now need direct control over that offset:
+ *
+ * 1. Idle auto-drift (the original ambient scroll).
+ * 2. Drag-to-spin — grab the row and move it manually, with a bit of
+ *    momentum after release (same interaction pattern already used for
+ *    the tools carousel on the contact page, ToolsOrbit3D.tsx).
+ * 3. Auto-centering — whenever this row contains the track that's
+ *    currently playing, drift/drag/momentum all pause and the row
+ *    instead eases toward whichever visible duplicate of that track is
+ *    closest, until it sits dead-center. It un-freezes and resumes
+ *    drifting the moment that track is no longer the one playing
+ *    (paused, or playback moves to a track in the other row).
+ *
+ * The "infinite" illusion itself still works the same way as before:
+ * the track list is duplicated an even number of times, and the offset
+ * wraps by exactly half of the row's rendered width — since every copy
+ * is pixel-identical, wrapping by that half-width is visually seamless
+ * regardless of direction, drag, or how many copies there are.
+ */
 function MarqueeRow({ tracks, reverse, currentTrackId, isPlaying, onCardClick }: MarqueeRowProps) {
-  const [paused, setPaused] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Copies are always even, so a `translateX(-50%)` keyframe lines the
-  // first half of the rendered row up exactly with the second half — the
-  // loop resets invisibly instead of visibly "jumping". Short track lists
-  // get duplicated more times so the row still reads as generously full
-  // rather than sparse and repeating too obviously.
+  const offsetRef = useRef(0);
+  const velocityRef = useRef(0);
+  const draggingRef = useRef(false);
+  const dragMovedRef = useRef(0);
+  const lastXRef = useRef(0);
+  const hoveredRef = useRef(false);
+  const halfWidthRef = useRef(0);
+
+  const [dragging, setDragging] = useState(false);
+
+  // Short lists get duplicated more times so the row still reads as
+  // generously full rather than sparse; always an even count (see note
+  // above on why that matters for the wrap math).
   const copies = tracks.length >= 10 ? 2 : tracks.length >= 5 ? 4 : 6;
   const items = useMemo(() => Array.from({ length: copies }, () => tracks).flat(), [tracks, copies]);
-  const duration = Math.max(16, items.length * 3.4);
+
+  const rowHasActiveTrack = tracks.some((tr) => tr.id === currentTrackId);
+  const isCentering = rowHasActiveTrack && isPlaying;
+
+  useEffect(() => {
+    const inner = innerRef.current;
+    if (!inner) return;
+    const measure = () => {
+      halfWidthRef.current = inner.scrollWidth / 2;
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, [items.length]);
+
+  // Kill any leftover drag momentum the instant centering takes over, so
+  // it can't fight the centering pull on its way in.
+  useEffect(() => {
+    if (isCentering) velocityRef.current = 0;
+  }, [isCentering]);
+
+  useEffect(() => {
+    let raf = 0;
+    const drift = reverse ? DRIFT_SPEED : -DRIFT_SPEED;
+
+    const wrap = (value: number) => {
+      const half = halfWidthRef.current;
+      if (half <= 0) return value;
+      let v = value % half;
+      if (v > 0) v -= half;
+      return v;
+    };
+
+    const tick = () => {
+      const viewport = viewportRef.current;
+
+      if (draggingRef.current) {
+        // Offset is being written directly by the pointer handlers below;
+        // nothing to do here besides letting it through to the DOM.
+      } else if (isCentering && viewport) {
+        const viewportRect = viewport.getBoundingClientRect();
+        const viewportCenter = viewportRect.left + viewportRect.width / 2;
+
+        // Among every visible duplicate of the active track, nudge toward
+        // whichever one needs the smallest correction — this is what
+        // makes it "just settle" instead of jumping to a fixed copy,
+        // however this row happened to be positioned when playback
+        // started.
+        let bestDelta: number | null = null;
+        items.forEach((track, i) => {
+          if (track.id !== currentTrackId) return;
+          const el = cardRefs.current[i];
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          const cardCenter = rect.left + rect.width / 2;
+          const delta = cardCenter - viewportCenter;
+          if (bestDelta === null || Math.abs(delta) < Math.abs(bestDelta)) {
+            bestDelta = delta;
+          }
+        });
+
+        if (bestDelta !== null && Math.abs(bestDelta) > 0.5) {
+          offsetRef.current -= bestDelta * CENTER_EASE;
+        }
+      } else if (Math.abs(velocityRef.current) > 0.02) {
+        // Momentum left over from a drag release.
+        offsetRef.current += velocityRef.current;
+        velocityRef.current *= MOMENTUM_DECAY;
+      } else if (!hoveredRef.current) {
+        velocityRef.current = 0;
+        offsetRef.current += drift;
+      }
+
+      offsetRef.current = wrap(offsetRef.current);
+
+      const inner = innerRef.current;
+      if (inner) inner.style.transform = `translate3d(${offsetRef.current}px, 0, 0)`;
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [reverse, isCentering, currentTrackId, items]);
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    draggingRef.current = true;
+    setDragging(true);
+    dragMovedRef.current = 0;
+    lastXRef.current = e.clientX;
+    velocityRef.current = 0;
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    const delta = e.clientX - lastXRef.current;
+    lastXRef.current = e.clientX;
+    dragMovedRef.current += Math.abs(delta);
+    offsetRef.current += delta;
+    velocityRef.current = delta;
+  };
+
+  const endDrag = () => {
+    draggingRef.current = false;
+    setDragging(false);
+  };
 
   if (tracks.length === 0) return null;
 
   return (
     <div
+      ref={viewportRef}
       className="marquee-edge-fade overflow-hidden"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setPaused(false)}
+      style={{ touchAction: "pan-y", cursor: dragging ? "grabbing" : "grab" }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onPointerLeave={() => {
+        endDrag();
+        hoveredRef.current = false;
+      }}
+      onMouseEnter={() => {
+        hoveredRef.current = true;
+      }}
     >
-      <div
-        className={`flex w-max gap-3 sm:gap-4 ${reverse ? "animate-marquee-reverse" : "animate-marquee"}`}
-        style={{
-          animationDuration: `${duration}s`,
-          animationPlayState: paused ? "paused" : "running",
-        }}
-      >
+      <div ref={innerRef} className="flex w-max gap-3 will-change-transform sm:gap-4">
         {items.map((track, i) => (
           <MarqueeCard
             key={`${track.id}-${i}`}
+            ref={(el) => {
+              cardRefs.current[i] = el;
+            }}
             track={track}
             active={track.id === currentTrackId}
             playing={track.id === currentTrackId && isPlaying}
-            onClick={() => onCardClick(track.id)}
+            onClick={() => {
+              // A drag that moved more than a few px shouldn't also fire
+              // a click when the pointer is released.
+              if (dragMovedRef.current > DRAG_CLICK_THRESHOLD) {
+                dragMovedRef.current = 0;
+                return;
+              }
+              onCardClick(track.id);
+            }}
           />
         ))}
       </div>
@@ -186,24 +372,25 @@ function MarqueeRow({ tracks, reverse, currentTrackId, isPlaying, onCardClick }:
   );
 }
 
+type PortfolioMarqueeProps = {
+  category: TrackCategory;
+};
+
 /**
- * "Infinite" showcase view for the portfolio page: every track split
- * across two endlessly scrolling rows — the top row drifts left, the
- * bottom row drifts right — each row duplicated so the loop never
- * visibly resets. Meant to read as a large, constantly-alive catalogue
- * rather than a fixed page of cards.
- *
- * Pure CSS transform animation (reusing the same `marquee` /
- * `marquee-reverse` keyframes already used for the text marquee
- * elsewhere on the site — see Marquee.tsx / globals.css), so it stays
- * smooth on phones without any extra animation library. Hovering a row
- * (or, on touch, pressing it) pauses that row so a track is actually easy
- * to tap; `prefers-reduced-motion: reduce` already freezes all animation
- * globally (see globals.css), so this respects that automatically too.
+ * "Infinite" showcase view for the portfolio page: tracks (filtered by
+ * the shared category tabs, same as the grid view) split across two
+ * endlessly scrolling rows — the top row drifts left, the bottom row
+ * drifts right. See MarqueeRow above for drag-to-spin and the
+ * auto-center-on-play behavior.
  */
-export function PortfolioMarquee() {
+export function PortfolioMarquee({ category }: PortfolioMarqueeProps) {
   const { t } = useLocale();
   const { tracks, currentTrack, isPlaying, playTrack, toggle } = usePlayer();
+
+  const filtered = useMemo(
+    () => tracks.filter((tr) => trackCategory(tr) === category),
+    [tracks, category],
+  );
 
   const handleClick = (trackId: string) => {
     const globalIndex = tracks.findIndex((tr) => tr.id === trackId);
@@ -218,11 +405,11 @@ export function PortfolioMarquee() {
   const { rowA, rowB } = useMemo(() => {
     const a: Track[] = [];
     const b: Track[] = [];
-    tracks.forEach((tr, i) => (i % 2 === 0 ? a : b).push(tr));
-    return { rowA: a.length ? a : tracks, rowB: b.length ? b : tracks };
-  }, [tracks]);
+    filtered.forEach((tr, i) => (i % 2 === 0 ? a : b).push(tr));
+    return { rowA: a.length ? a : filtered, rowB: b.length ? b : filtered };
+  }, [filtered]);
 
-  if (tracks.length === 0) {
+  if (filtered.length === 0) {
     return (
       <div className="flex h-full min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-ink/12 text-center">
         <div>
@@ -249,6 +436,9 @@ export function PortfolioMarquee() {
         isPlaying={isPlaying}
         onCardClick={handleClick}
       />
+      <p className="pointer-events-none mt-1 text-center text-[10px] uppercase tracking-[0.18em] text-muted/50">
+        drag to spin
+      </p>
     </div>
   );
 }

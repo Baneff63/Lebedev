@@ -1,9 +1,21 @@
-// Deterministically turns a seed string (a track id) into a small abstract
-// "generated cover" — a few soft colored blobs over a dark base, in the
-// spirit of Spotify/Apple Music auto-generated playlist art. Same seed
-// always produces the same art, so a track's card looks identical
-// everywhere it appears (portfolio grid, marquee, and every duplicated
-// marquee clone of that same track) without ever storing a real image.
+// Deterministic "generated cover" for a track card.
+//
+// v2 — the first version used fully independent hsla() blobs, which
+// looked like a random rainbow sticker unrelated to the rest of the site.
+// This version reuses the exact visual language already used everywhere
+// else on the site for ambient glows (About/Contact backdrops,
+// FloatingBlob, ToolsEllipse): `radial-gradient(circle, var(--accent) ...,
+// transparent ...)`. Using `var(--accent)` instead of a fixed hex means
+// the cover automatically follows the site's light/dark theme toggle
+// (red in light mode, orange in dark mode) instead of staying a fixed
+// color regardless of theme.
+//
+// A small deterministic hue-rotate is layered on top purely for per-track
+// variety. It's applied to the whole background layer, but since the dark
+// base gradient is near-black/desaturated, hue-rotate barely touches it —
+// only the saturated accent glows visibly shift hue — so cards still read
+// as "the site's accent glow, just a different track" rather than an
+// unrelated color.
 
 function hashSeed(input: string): number {
   let h = 0;
@@ -14,30 +26,33 @@ function hashSeed(input: string): number {
   return Math.abs(h) || 1;
 }
 
-function blob(h: number, i: number): string {
-  // Spread each blob's numbers out using different multipliers/shifts of
-  // the same hash so three blobs from one seed don't end up looking
-  // suspiciously similar to each other.
-  const hue = (h * (i * 37 + 11)) % 360;
-  const x = 12 + ((h >> (i * 3 + 1)) % 76);
-  const y = 8 + ((h >> (i * 5 + 2)) % 82);
-  const sat = 55 + ((i * 9) % 25);
-  const light = 40 + ((i * 13) % 20);
-  const alpha = (0.5 - i * 0.09).toFixed(2);
-  const size = 55 + ((i * 17) % 25);
-  return `radial-gradient(circle at ${x}% ${y}%, hsla(${hue}, ${sat}%, ${light}%, ${alpha}) 0%, transparent ${size}%)`;
+function glow(h: number, i: number): string {
+  const x = 15 + ((h >> (i * 4 + 1)) % 70);
+  const y = 10 + ((h >> (i * 4 + 3)) % 75);
+  const size = 42 + ((h >> (i * 2)) % 26);
+  const strength = Math.round((0.42 - i * 0.09) * 100);
+  return `radial-gradient(circle at ${x}% ${y}%, color-mix(in srgb, var(--accent) ${strength}%, transparent) 0%, transparent ${size}%)`;
 }
 
-/** CSS `background-image` value: 3 seeded blobs over the site's existing dark card base. */
-export function generativeCoverBackground(seed: string): string {
+export type GenerativeCoverStyle = {
+  backgroundImage: string;
+  filter: string;
+};
+
+/**
+ * Ready-to-spread style for a dedicated background *layer* — deliberately
+ * NOT meant to be applied to a card that also contains text/icons/bars,
+ * since the hue-rotate filter would then affect those too. Render it as
+ * its own `absolute inset-0` element, with the rest of the card's content
+ * as siblings on top of it.
+ */
+export function generativeCoverStyle(seed: string): GenerativeCoverStyle {
   const h = hashSeed(seed);
-  const blobs = [blob(h, 0), blob(h, 1), blob(h, 2)].join(", ");
-  return `${blobs}, linear-gradient(160deg, #211e1a 0%, #131110 100%)`;
-}
-
-/** Ready-to-spread inline style object for a card's cover element. */
-export function generativeCoverStyle(seed: string): { backgroundImage: string } {
-  return { backgroundImage: generativeCoverBackground(seed) };
+  const glows = [glow(h, 0), glow(h, 1), glow(h, 2)].join(", ");
+  return {
+    backgroundImage: `${glows}, linear-gradient(160deg, #211e1a 0%, #131110 100%)`,
+    filter: `hue-rotate(${h % 360}deg)`,
+  };
 }
 
 /** Small positive integer derived from a seed — handy for staggering per-card animation timing. */
