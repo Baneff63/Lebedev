@@ -5,6 +5,13 @@ import { usePathname } from "next/navigation";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
+// Slowed down from the first pass (was 0.7s / 0.25s) — the quick version
+// read as abrupt. The curtain now takes noticeably longer to open, and
+// the sweep line and content underneath are timed to match.
+const CURTAIN_DURATION = 1.4; // seconds
+const CURTAIN_FADE_DELAY = 0.55; // seconds, once clip-path is mostly open
+const SWEEP_DURATION = 1.4; // seconds
+
 /**
  * Wraps every public page.
  *
@@ -66,17 +73,18 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
     // 2) Now animate open, revealing whatever page is already sitting
     //    underneath (fully mounted or not — it no longer matters).
-    curtain.style.transition = `clip-path 0.7s ${EASE}, opacity 0.25s ease-out 0.3s`;
+    curtain.style.transition = `clip-path ${CURTAIN_DURATION}s ${EASE}, opacity 0.4s ease-out ${CURTAIN_FADE_DELAY}s`;
     curtain.style.clipPath = "circle(2% at 50% 0%)";
     curtain.style.opacity = "0";
 
-    // Decorative scanline sweep, matching the old effect.
+    // Decorative scanline sweep, matching the old effect — timed to the
+    // same, slower duration as the curtain itself.
     if (sweep) {
       sweep.style.transition = "none";
       sweep.style.transform = "translateY(0)";
       sweep.style.opacity = "0";
       void sweep.offsetHeight;
-      sweep.style.transition = `transform 0.7s ${EASE}, opacity 0.7s ${EASE}`;
+      sweep.style.transition = `transform ${SWEEP_DURATION}s ${EASE}, opacity ${SWEEP_DURATION}s ${EASE}`;
       sweep.style.transform = "translateY(100vh)";
       sweep.style.opacity = "0.7";
     }

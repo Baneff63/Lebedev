@@ -97,14 +97,11 @@ export function Header() {
           <Magnetic strength={0.25}>
             <Link href="/" data-cursor className="flex items-center gap-2">
               {/*
-                Landing spot for the Loader's spectrum ring/flash on the
-                very first paint (see Loader.tsx): it measures this dot's
-                real screen position and animates the ring/flash toward
-                it, then the iris-reveal collapses into this exact point
-                instead of the screen center. That makes the dot read as
-                the ring "settling into" a permanent part of the site's
-                UI — a live status indicator that's always here — rather
-                than the loading visual simply switching off.
+                Fallback landing spot for the Loader's scope/flash on
+                routes (or viewports) that don't have the real hero
+                SignalScope to hand off into — see Loader.tsx. It measures
+                this dot's real screen position and collapses the scope
+                toward it instead of into a mismatched empty spot.
               */}
               <span
                 data-signal-dot
