@@ -344,18 +344,12 @@ body:has(.fixed-player) .studio-hud {
 /* Patch additions: mobile nav, orbit particles, touch scrolling, safe-area */
 /* ---------------------------------------------------------------------- */
 
-/* Belt-and-suspenders: guarantees every "app shell" main also establishes
-   its own stacking context, so any negative z-index used for decorative
-   backgrounds (grid-bg, ambient equalizer, portfolio/blog backdrops) can
-   never escape past it and end up hidden behind <body>'s own background —
-   see AmbientEqualizerField.tsx for the full explanation of that bug. */
 .app-shell-main {
   isolation: isolate;
   height: 100dvh;
   min-height: -webkit-fill-available;
 }
 
-/* Mobile nav overlay */
 .mobile-nav {
   overscroll-behavior: contain;
 }
@@ -367,13 +361,11 @@ body:has(.fixed-player) .studio-hud {
     opacity 0.3s var(--ease-out-expo);
 }
 
-/* Smooth momentum scrolling on internally-scrolling panels on iOS */
 .thin-scrollbar,
 .mobile-nav {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Drifting particle field behind the 3D tools orbit (contact page) */
 @keyframes orbit-drift {
   0% {
     transform: translate3d(0, 0, 0);
@@ -401,9 +393,6 @@ body:has(.fixed-player) .studio-hud {
   }
 }
 
-/* Small-screen polish: tighter section rhythm, safe-area aware footer/player,
-   and larger tap targets so nothing on the no-scroll app-shell pages feels
-   cramped on a phone. */
 @media (max-width: 640px) {
   :root {
     --section-py: clamp(2.5rem, 10vw, 4rem);
@@ -423,27 +412,6 @@ body:has(.fixed-player) .studio-hud {
 /* ---------------------------------------------------------------------- */
 /* Mobile fix: pages no longer fit / bottom content hidden behind player   */
 /* ---------------------------------------------------------------------- */
-/*
- * Every page is built as a fixed `100dvh` "app shell" with `overflow:
- * hidden` (see `.app-shell-main` above + the `h-dvh overflow-hidden`
- * classes on each page's <main>) and relies on inner panels adding their
- * own `overflow-y-auto` to scroll. That's fine on desktop where there's
- * plenty of vertical room, but on phones — shorter viewports, and a good
- * chunk of that viewport is already spent on the header, the fixed
- * footer/player bar, and safe-area insets — real content (hero copy,
- * the contact page's 3-column layout stacked to one column, portfolio
- * cards, etc.) regularly doesn't fit in what's left, and anything past
- * the bottom edge was being silently clipped instead of shown, which is
- * also why elements sitting near the bottom looked hidden behind the
- * player bar.
- *
- * Below `md`, drop the fixed-height/no-scroll approach entirely: the
- * shell grows with its content and the page scrolls normally, the same
- * way any ordinary mobile site does. The fixed footer/player bar stays
- * pinned via `position: fixed` regardless (that's untouched), and the
- * extra bottom padding here makes sure the last bit of real content
- * always clears it once scrolled all the way down.
- */
 @media (max-width: 767.98px) {
   .app-shell-main {
     height: auto !important;
@@ -456,23 +424,6 @@ body:has(.fixed-player) .studio-hud {
     padding-bottom: calc(var(--player-height) + 2rem) !important;
   }
 
-  /*
-   * A bunch of components were written assuming that fixed-height shell
-   * (chains of `h-full` / `flex-1 min-h-0 overflow-y-auto`) so their own
-   * content would stretch to fill it and scroll internally. With the
-   * shell now auto-height on mobile, let those specific chains relax to
-   * their natural content size too — otherwise a `flex-1` inside a now
-   * auto-height flex column can still resolve to a squashed/zero height
-   * instead of showing everything.
-   *
-   * `[class~="…"]` matches a whole class *token*, not a substring — so
-   * this only targets elements that literally carry the class `h-full`
-   * or `min-h-0` (as authored by the Tailwind chains below), and
-   * deliberately leaves other things alone, e.g. the BPM/key analyzer
-   * modal on the contact page, which uses `max-h-[85vh] overflow-y-auto`
-   * (no `min-h-0`) precisely because it's a real overlay that should
-   * keep scrolling internally rather than merge into page scroll.
-   */
   .app-shell-main [class~="h-full"] {
     height: auto !important;
   }
@@ -490,35 +441,16 @@ body:has(.fixed-player) .studio-hud {
 /* ---------------------------------------------------------------------- */
 
 /*
- * Idle-state equalizer bars inside PortfolioMarquee.tsx cards. Pure CSS
- * (no JS animation loop) so it stays cheap even with dozens of duplicated
- * marquee-clone cards on screen at once. Each bar gets its own
- * `--eq-min` / `--eq-max` / animation-duration / animation-delay set
- * inline (deterministically, from the track id) so bars don't pulse in
- * unison and the pattern never reshuffles between renders.
+ * Soft fade at both edges of each marquee row, so cards visibly scroll
+ * "into" and "out of" the row rather than being hard-clipped at the
+ * container edge. Declared as a real class (with both the prefixed and
+ * unprefixed property) rather than an inline Tailwind arbitrary value,
+ * so Safari/iOS — which still wants `-webkit-mask-image` — gets it too.
+ *
+ * (The `.eq-bar-idle` / `@keyframes eq-pulse` rules that used to live
+ * here for an always-pulsing idle equalizer have been removed — the
+ * equalizer is back to static-until-playing, see PortfolioMarquee.tsx.)
  */
-@keyframes eq-pulse {
-  0%,
-  100% {
-    transform: scaleY(var(--eq-min, 0.2));
-  }
-  50% {
-    transform: scaleY(var(--eq-max, 0.75));
-  }
-}
-
-.eq-bar-idle {
-  animation-name: eq-pulse;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  transform-origin: bottom;
-}
-
-/* Soft fade at both edges of each marquee row, so cards visibly scroll
-   "into" and "out of" the row rather than being hard-clipped at the
-   container edge. Declared as a real class (with both the prefixed and
-   unprefixed property) rather than an inline Tailwind arbitrary value,
-   so Safari/iOS — which still wants `-webkit-mask-image` — gets it too. */
 .marquee-edge-fade {
   -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
   mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
