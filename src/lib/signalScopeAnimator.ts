@@ -95,22 +95,10 @@ export function createSignalScopeAnimator() {
     const accent = hexToRgb(colors.accent);
     const ink = hexToRgb(colors.ink);
 
-    // --- faint graticule, like an oscilloscope's screen grid ---
-    ctx.strokeStyle = `rgba(${ink.r}, ${ink.g}, ${ink.b}, 0.05)`;
-    ctx.lineWidth = 1;
-    const gridStep = Math.max(36, Math.min(width, height) / 12);
-    for (let x = cx % gridStep; x < width; x += gridStep) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = cy % gridStep; y < height; y += gridStep) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
+    // NOTE: the faint background graticule (grid lines) that used to be
+    // drawn here has been removed — it read as visual clutter behind the
+    // ring/trace rather than adding anything, on both the loader and the
+    // real hero element.
 
     // --- rotating radial spectrum ring ---
     const ringRadius = Math.min(width, height) * 0.32;

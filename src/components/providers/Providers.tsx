@@ -42,10 +42,28 @@ function AppShell({ children }: { children: ReactNode }) {
           Loader вызовет setLoaded(true). См. StartupSound.tsx. */}
       <StartupSound />
       <CustomCursor />
-      <div
-        className="site-shell isolate transition-opacity duration-300"
-        style={{ opacity: isLoaded ? 1 : 0 }}
-      >
+      {/*
+        BUG FIX: this used to be hidden via `opacity: isLoaded ? 1 : 0` with
+        a 300ms fade-in — a leftover defensive measure from when the Loader
+        might not have painted yet. It's redundant: `<Loader/>`'s own
+        overlay is `fixed inset-0 z-[10000]` with an opaque background,
+        rendered in the same server-rendered markup, so it already fully
+        covers this real page with zero JS required — nothing was ever at
+        risk of flashing through.
+        Worse, that opacity gate is what caused a real visual bug: the
+        Loader's exit animation hands off into the real, already-mounted
+        `SignalScope` on the homepage hero by shrinking an iris exactly
+        around it — but with this div sitting at `opacity: 0` the whole
+        time, there was nothing for that iris to reveal. The shape the
+        Loader drew would vanish, and only ~300ms later (once this opacity
+        transition ran) would the real page — and the real SignalScope —
+        actually fade into view. That gap read as "the shape disappears,
+        then reappears". Rendering this at full opacity from the start
+        (still fully hidden underneath the Loader) makes the handoff truly
+        seamless: whatever is revealed by the shrinking iris is already
+        there, mid-animation, matching what the Loader was just drawing.
+      */}
+      <div className="site-shell isolate">
         <PageTransition>{children}</PageTransition>
       </div>
     </>
