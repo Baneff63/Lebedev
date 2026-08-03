@@ -8,9 +8,9 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 // Slowed down from the first pass (was 0.7s / 0.25s) — the quick version
 // read as abrupt. The curtain now takes noticeably longer to open, and
 // the sweep line and content underneath are timed to match.
-const CURTAIN_DURATION = 1.4; // seconds
-const CURTAIN_FADE_DELAY = 0.55; // seconds, once clip-path is mostly open
-const SWEEP_DURATION = 1.4; // seconds
+const CURTAIN_DURATION = 2; // seconds
+const CURTAIN_FADE_DELAY = 1; // seconds, once clip-path is mostly open
+const SWEEP_DURATION = 2; // seconds
 
 /**
  * Wraps every public page.
