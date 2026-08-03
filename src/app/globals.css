@@ -484,3 +484,42 @@ body:has(.fixed-player) .studio-hud {
     flex: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Patch addition: portfolio "flow" view (infinite marquee rows)          */
+/* ---------------------------------------------------------------------- */
+
+/*
+ * Idle-state equalizer bars inside PortfolioMarquee.tsx cards. Pure CSS
+ * (no JS animation loop) so it stays cheap even with dozens of duplicated
+ * marquee-clone cards on screen at once. Each bar gets its own
+ * `--eq-min` / `--eq-max` / animation-duration / animation-delay set
+ * inline (deterministically, from the track id) so bars don't pulse in
+ * unison and the pattern never reshuffles between renders.
+ */
+@keyframes eq-pulse {
+  0%,
+  100% {
+    transform: scaleY(var(--eq-min, 0.2));
+  }
+  50% {
+    transform: scaleY(var(--eq-max, 0.75));
+  }
+}
+
+.eq-bar-idle {
+  animation-name: eq-pulse;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  transform-origin: bottom;
+}
+
+/* Soft fade at both edges of each marquee row, so cards visibly scroll
+   "into" and "out of" the row rather than being hard-clipped at the
+   container edge. Declared as a real class (with both the prefixed and
+   unprefixed property) rather than an inline Tailwind arbitrary value,
+   so Safari/iOS — which still wants `-webkit-mask-image` — gets it too. */
+.marquee-edge-fade {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}

@@ -6,6 +6,7 @@ import { usePlayer, formatTime } from "@/context/PlayerContext";
 import { TiltCard } from "@/components/ui/TiltCard";
 import type { Track, TrackCategory } from "@/types/site";
 import { trackCategory } from "@/types/site";
+import { generativeCoverStyle } from "@/lib/generativeCover";
 
 const EQ_BAR_COUNT = 16;
 
@@ -141,8 +142,18 @@ export function PortfolioGrid() {
                   >
                     <div
                       className="relative flex h-28 items-center justify-center overflow-hidden"
-                      style={{ background: "linear-gradient(160deg, #211e1a 0%, #131110 100%)" }}
+                      style={generativeCoverStyle(track.id)}
                     >
+                      {/* Seeded generative art now sits behind the
+                          equalizer instead of a flat gradient (see
+                          src/lib/generativeCover.ts) — this overlay keeps
+                          the equalizer bars and play button reading
+                          clearly on top of it, whatever colors that
+                          particular track happened to get. */}
+                      <div
+                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/25"
+                        aria-hidden
+                      />
                       <CardEqualizer playing={activePlaying} seed={globalIndex + 1} />
                       <button
                         type="button"

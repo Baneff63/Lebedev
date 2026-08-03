@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "@/components/layout/Header";
 import { SiteFooterBar } from "@/components/layout/SiteFooterBar";
 import { PortfolioBackdrop } from "@/components/effects/PortfolioBackdrop";
-import { PortfolioGrid } from "@/components/portfolio/PortfolioGrid";
+import { PortfolioView } from "@/components/portfolio/PortfolioView";
 
 export const metadata: Metadata = { title: "Портфолио" };
 
@@ -23,10 +23,12 @@ export default function PortfolioPage() {
             </h1>
           </div>
 
-          {/* Only this panel scrolls (when there are more tracks than fit)
-              — the page itself stays fixed at 100dvh. */}
+          {/* Only this panel scrolls/animates (when there are more tracks
+              than fit, or in the flow view, always) — the page itself
+              stays fixed at 100dvh. PortfolioView owns the flow/grid
+              toggle and renders whichever is currently selected. */}
           <div className="mt-8 min-h-0 flex-1 pb-4">
-            <PortfolioGrid />
+            <PortfolioView />
           </div>
         </div>
       </main>
