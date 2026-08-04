@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { useLocale, useApp } from "@/context/LocaleContext";
@@ -12,7 +12,31 @@ export function HomeHero() {
   const { isLoaded } = useApp();
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  /*
+   * BUG FIX: this used to be `useEffect`. The hero markup is present in
+   * the DOM (fully visible, no hidden state of its own) from the very
+   * first render — it just happens to sit underneath the opaque Loader
+   * overlay while `isLoaded` is false. The entrance animation only runs
+   * once `isLoaded` flips to true, and it works by calling
+   * `gsap.from(...)`, which SETS the hidden/offset starting state itself
+   * the moment it runs, then animates from there.
+   *
+   * `useEffect` runs *after* the browser has already painted the commit
+   * that made this true. In that same commit, `isLoaded` becoming true
+   * also unmounts the Loader (see Providers.tsx: `{!isLoaded && <Loader/>}`).
+   * So the actual sequence was: Loader disappears → browser paints the
+   * hero in its plain, fully-visible, non-animated state (this is the
+   * "text appears immediately" the report described) → a frame later,
+   * `useEffect` finally runs, `gsap.from()` snaps every line to
+   * opacity:0/offset (the "then it disappears") → and only then does the
+   * actual entrance tween play.
+   *
+   * `useLayoutEffect` runs synchronously right after the DOM is updated,
+   * before the browser paints anything. So the `gsap.from()` hidden state
+   * is already in place for the very first frame the Loader-free page is
+   * shown — there's nothing left to flash.
+   */
+  useLayoutEffect(() => {
     if (!isLoaded || !ref.current) return;
 
     const ctx = gsap.context(() => {

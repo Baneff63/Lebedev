@@ -5,44 +5,61 @@ import { usePathname } from "next/navigation";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-// Slowed down from the first pass (was 0.7s / 0.25s) — the quick version
-// read as abrupt. The curtain now takes noticeably longer to open, and
-// the sweep line and content underneath are timed to match.
 const CURTAIN_DURATION = 1.4; // seconds
 const CURTAIN_FADE_DELAY = 0.55; // seconds, once clip-path is mostly open
 const SWEEP_DURATION = 1.4; // seconds
 
+type TransitionVariant = "top" | "corner-tl" | "corner-br" | "center";
+
+/**
+ * Per-page transition "flavors". Every variant uses the exact same
+ * mechanism as before — a `circle(R% at X% Y%)` clip-path shrinking from
+ * fully-covering down to a near-0 point — only the origin point (and the
+ * sweep line's axis/direction) changes. Deliberately kept to the same
+ * `circle(...)` function for every variant rather than switching to
+ * `polygon(...)` shapes: browsers only interpolate clip-path smoothly
+ * between two values when they're the same function with matching
+ * parameter structure, so varying just the static params here is what
+ * keeps every variant reliably smooth rather than risking a snapping/
+ * non-interpolated jump on some variant.
+ */
+const VARIANTS: Record<
+  TransitionVariant,
+  { origin: string; sweepAxis: "horizontal" | "vertical"; sweepReverse?: boolean }
+> = {
+  // Home — the original top-center iris.
+  top: { origin: "50% 0%", sweepAxis: "horizontal" },
+  // Portfolio — opens from the top-left corner.
+  "corner-tl": { origin: "0% 0%", sweepAxis: "vertical" },
+  // Contact — opens from the bottom-right corner, sweep runs the other way.
+  "corner-br": { origin: "100% 100%", sweepAxis: "vertical", sweepReverse: true },
+  // Blog / blog posts — opens from dead-center, sweep runs bottom-to-top.
+  center: { origin: "50% 50%", sweepAxis: "horizontal", sweepReverse: true },
+};
+
+function getVariant(pathname: string): TransitionVariant {
+  if (pathname.startsWith("/portfolio")) return "corner-tl";
+  if (pathname.startsWith("/contact")) return "corner-br";
+  if (pathname.startsWith("/blog")) return "center";
+  return "top";
+}
+
 /**
  * Wraps every public page.
  *
- * PREVIOUS APPROACH (removed): animated `opacity`/`clip-path` directly on
- * the routed page's own wrapper via framer-motion's `initial`/`animate`.
- * That looked fine in isolation, but in the App Router the actual sequence
- * on navigation is: Next fetches the new route's RSC payload → commits it
- * to the DOM (the new page is now fully, visibly painted) → *then*
- * framer-motion's effects run and apply the `initial` clip-path. Between
- * those two steps the browser can — and did — paint a frame of the new
- * page fully revealed, un-clipped. That's the "page pops in, then the
- * animation plays, then it pops in again" flash: the page was genuinely
- * appearing twice.
+ * Mechanism (unchanged from before): an independent "curtain" overlay —
+ * a sibling of the routed page, not a wrapper around it — sits on top of
+ * everything. On every pathname change, `useLayoutEffect` (runs
+ * synchronously before the browser paints) snaps the curtain fully shut
+ * first, forces a reflow, then animates it open. Because this doesn't
+ * depend on when React/Next actually finished mounting the new page
+ * underneath, there's no window for an unclipped frame to sneak through.
  *
- * FIX: don't animate the page at all. Instead, an independent "curtain" —
- * a sibling overlay, not a wrapper — sits on top of everything. On every
- * pathname change, `useLayoutEffect` (which runs synchronously *before*
- * the browser paints, unlike a regular effect) snaps the curtain fully
- * shut first, forces a reflow, and only then starts animating it open.
- * Because this doesn't care when React/Next actually finished mounting
- * the new page underneath — the curtain's own paint timing is what the
- * viewer sees — there's no window left for an unclipped frame to sneak
- * through, regardless of how fast or slow the route transition itself is.
- *
- * The curtain only ever animates `clip-path`/`opacity`, never `transform`,
- * for the same reason as before: a stray inline `transform` left on an
- * ancestor of the routed page would become the containing block for any
- * `position: fixed` descendant inside it (e.g. the contact page's
- * BPM/key-analyzer modal), silently breaking its positioning. Since the
- * curtain is a sibling — not a wrapper around `children` — this concern
- * doesn't even apply to it, but the discipline is kept anyway.
+ * NEW: which corner/point the curtain opens from — and which direction
+ * the decorative sweep line travels — now depends on which section is
+ * being navigated to (see VARIANTS/getVariant above), so different parts
+ * of the site each get their own transition character instead of every
+ * navigation looking identical.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -62,10 +79,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
     const sweep = sweepRef.current;
     if (!curtain) return;
 
+    const variant = VARIANTS[getVariant(pathname)];
+
     // 1) Snap shut instantly, no transition — this happens before the
     //    browser's next paint, so nothing is ever seen "open" at this point.
     curtain.style.transition = "none";
-    curtain.style.clipPath = "circle(150% at 50% 0%)";
+    curtain.style.clipPath = `circle(150% at ${variant.origin})`;
     curtain.style.opacity = "1";
     // Force a style flush/reflow so the browser can't coalesce the "shut"
     // state and the "open" tween into a single paint.
@@ -74,18 +93,51 @@ export function PageTransition({ children }: { children: ReactNode }) {
     // 2) Now animate open, revealing whatever page is already sitting
     //    underneath (fully mounted or not — it no longer matters).
     curtain.style.transition = `clip-path ${CURTAIN_DURATION}s ${EASE}, opacity 0.4s ease-out ${CURTAIN_FADE_DELAY}s`;
-    curtain.style.clipPath = "circle(2% at 50% 0%)";
+    curtain.style.clipPath = `circle(2% at ${variant.origin})`;
     curtain.style.opacity = "0";
 
-    // Decorative scanline sweep, matching the old effect — timed to the
-    // same, slower duration as the curtain itself.
+    // Decorative scanline sweep — axis/direction follows the variant so
+    // it always travels roughly "away from" the curtain's opening point.
     if (sweep) {
       sweep.style.transition = "none";
-      sweep.style.transform = "translateY(0)";
+      sweep.style.top = "auto";
+      sweep.style.right = "auto";
+      sweep.style.bottom = "auto";
+      sweep.style.left = "auto";
+      sweep.style.width = "auto";
+      sweep.style.height = "auto";
+
+      if (variant.sweepAxis === "horizontal") {
+        sweep.style.left = "0";
+        sweep.style.right = "0";
+        sweep.style.height = "2px";
+        if (variant.sweepReverse) {
+          sweep.style.bottom = "0";
+        } else {
+          sweep.style.top = "0";
+        }
+        sweep.style.transform = "translateY(0)";
+      } else {
+        sweep.style.top = "0";
+        sweep.style.bottom = "0";
+        sweep.style.width = "2px";
+        if (variant.sweepReverse) {
+          sweep.style.right = "0";
+        } else {
+          sweep.style.left = "0";
+        }
+        sweep.style.transform = "translateX(0)";
+      }
+
       sweep.style.opacity = "0";
       void sweep.offsetHeight;
+
       sweep.style.transition = `transform ${SWEEP_DURATION}s ${EASE}, opacity ${SWEEP_DURATION}s ${EASE}`;
-      sweep.style.transform = "translateY(100vh)";
+      if (variant.sweepAxis === "horizontal") {
+        sweep.style.transform = variant.sweepReverse ? "translateY(-100vh)" : "translateY(100vh)";
+      } else {
+        sweep.style.transform = variant.sweepReverse ? "translateX(-100vw)" : "translateX(100vw)";
+      }
       sweep.style.opacity = "0.7";
     }
   }, [pathname]);
@@ -105,10 +157,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
         aria-hidden
       />
 
-      {/* Decorative scanline sweep on top of the curtain. */}
+      {/* Decorative scanline sweep on top of the curtain. Position/size
+          are fully controlled imperatively per-variant in the effect
+          above, so no positional Tailwind classes are set here. */}
       <div
         ref={sweepRef}
-        className="pointer-events-none fixed inset-x-0 top-0 z-[86] h-[2px] opacity-0"
+        className="pointer-events-none fixed z-[86] opacity-0"
         style={{
           background: "var(--accent)",
           boxShadow: "0 0 16px 2px var(--accent)",
