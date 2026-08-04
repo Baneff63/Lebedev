@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useApp, useLocale } from "@/context/LocaleContext";
 import { createSignalScopeAnimator } from "@/lib/signalScopeAnimator";
 import { SIGNAL_SCOPE_SLOT_ATTR } from "@/components/effects/GlobalSignalScope";
+import { triggerSignalScopeHandoff } from "@/lib/signalScopeHandoff";
 
 const STAGE_LABELS: Record<"ru" | "en", string[]> = {
   ru: ["калибровка входа", "прогрев преампов", "синхронизация", "финальная проверка"],
@@ -145,101 +146,94 @@ export function Loader() {
     const iris = { radius: 150 };
     let lastStage = -1;
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        document.body.style.overflow = "";
-        setLoaded(true);
-      },
-    });
+let handoffTarget: Rect | null = null;
 
-    tl.to(counter, {
-      val: 100,
-      duration: 1.7,
-      ease: "power2.inOut",
-      onUpdate: () => {
-        progressPercentRef.current = counter.val;
-        if (counterRef.current) {
-          counterRef.current.textContent = String(Math.round(counter.val)).padStart(2, "0");
-        }
-        const stageIndex = Math.min(stages.length - 1, Math.floor((counter.val / 100) * stages.length));
-        if (stageIndex !== lastStage && stageRef.current) {
-          lastStage = stageIndex;
-          stageRef.current.textContent = stages[stageIndex];
-        }
-      },
-    })
-      .to(progressRef.current, { scaleX: 1, duration: 1.7, ease: "power2.inOut" }, 0)
-      // Look for the real slot element to hand off to. If it exists,
-      // glide the scope's drawing rect from wherever it currently is
-      // toward that element's exact on-screen box — so by the time the
-      // iris opens, the loader's scope and the real one line up exactly.
-      .add(() => {
-        const heroEl = document.querySelector<HTMLElement>(`[${SIGNAL_SCOPE_SLOT_ATTR}]`);
-        const from = { ...rectRef.current };
+const tl = gsap.timeline({
+  onComplete: () => {
+    document.body.style.overflow = "";
+    setLoaded(true);
+  },
+});
 
-        if (heroEl) {
-          const box = heroEl.getBoundingClientRect();
-          if (box.width > 4 && box.height > 4) {
-            heroAnchorFoundRef.current = true;
-            const to = { left: box.left, top: box.top, width: box.width, height: box.height };
-            gsap.to(from, {
-              ...to,
-              duration: 0.6,
-              ease: "power3.inOut",
-              onUpdate: () => {
-                rectRef.current = { ...from };
-              },
-            });
-            irisOriginRef.current = {
-              x: ((box.left + box.width / 2) / window.innerWidth) * 100,
-              y: ((box.top + box.height / 2) / window.innerHeight) * 100,
-            };
-            return;
-          }
-        }
+tl.to(counter, {
+  val: 100,
+  duration: 1.7,
+  ease: "power2.inOut",
+  onUpdate: () => {
+    progressPercentRef.current = counter.val;
+    if (counterRef.current) {
+      counterRef.current.textContent = String(Math.round(counter.val)).padStart(2, "0");
+    }
+    const stageIndex = Math.min(stages.length - 1, Math.floor((counter.val / 100) * stages.length));
+    if (stageIndex !== lastStage && stageRef.current) {
+      lastStage = stageIndex;
+      stageRef.current.textContent = stages[stageIndex];
+    }
+  },
+})
+  .to(progressRef.current, { scaleX: 1, duration: 1.7, ease: "power2.inOut" }, 0)
+  .add(() => {
+    const heroEl = document.querySelector<HTMLElement>(`[${SIGNAL_SCOPE_SLOT_ATTR}]`);
 
-        // Fallback: no real slot element on this route/viewport — collapse
-        // the whole scope down toward the header's small signal dot
-        // instead, shrinking the rect itself so the visual reads as
-        // condensing into that point rather than a mismatched swap.
-        const dot = document.querySelector<HTMLElement>("[data-signal-dot]");
-        const dotRect = dot?.getBoundingClientRect();
-        const target = dotRect
-          ? { left: dotRect.left, top: dotRect.top, width: dotRect.width, height: dotRect.height }
-          : { left: from.left + from.width / 2, top: from.top + from.height / 2, width: 2, height: 2 };
+    if (heroEl) {
+      const box = heroEl.getBoundingClientRect();
+      if (box.width > 4 && box.height > 4) {
+        heroAnchorFoundRef.current = true;
+        handoffTarget = { left: box.left, top: box.top, width: box.width, height: box.height };
 
-        gsap.to(from, {
-          ...target,
-          duration: 0.6,
-          ease: "power3.inOut",
-          onUpdate: () => {
-            rectRef.current = { ...from };
-          },
-        });
+        // Отдаём реальный target GlobalSignalScope ПРЯМО СЕЙЧАС — он ещё
+        // скрыт под непрозрачным оверлеем, поэтому переход невидим.
+        triggerSignalScopeHandoff(handoffTarget);
+
         irisOriginRef.current = {
-          x: ((target.left + target.width / 2) / window.innerWidth) * 100,
-          y: ((target.top + target.height / 2) / window.innerHeight) * 100,
+          x: ((box.left + box.width / 2) / window.innerWidth) * 100,
+          y: ((box.top + box.height / 2) / window.innerHeight) * 100,
         };
-      })
-      // Fade the copy (counter / progress bar / stage label) out before
-      // the iris starts opening, so nothing gets abruptly clipped mid-wipe.
-      .to(contentRef.current, { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, "-=0.15")
-      .to(hudRef.current, { opacity: 0, duration: 0.25, ease: "power2.in" }, "<")
-      // Iris reveal: the visible circle of the overlay shrinks from full
-      // screen coverage down to a vanishing point at the handoff target
-      // (the real slot element, or the header dot) — like a CRT tube
-      // powering off, in reverse, aimed exactly at what's underneath.
-      .to(iris, {
-        radius: 0,
-        duration: 0.85,
-        ease: "power4.inOut",
-        onUpdate: () => {
-          if (overlayRef.current) {
-            const { x, y } = irisOriginRef.current;
-            overlayRef.current.style.clipPath = `circle(${iris.radius}% at ${x}% ${y}%)`;
-          }
-        },
-      });
+        return;
+      }
+    }
+
+    // Фолбэк: слота нет на этом роуте/вьюпорте — едем в точку в хедере.
+    const dot = document.querySelector<HTMLElement>("[data-signal-dot]");
+    const dotRect = dot?.getBoundingClientRect();
+    handoffTarget = dotRect
+      ? { left: dotRect.left, top: dotRect.top, width: dotRect.width, height: dotRect.height }
+      : {
+          left: rectRef.current.left + rectRef.current.width / 2,
+          top: rectRef.current.top + rectRef.current.height / 2,
+          width: 2,
+          height: 2,
+        };
+
+    irisOriginRef.current = {
+      x: ((handoffTarget.left + handoffTarget.width / 2) / window.innerWidth) * 100,
+      y: ((handoffTarget.top + handoffTarget.height / 2) / window.innerHeight) * 100,
+    };
+  })
+  // Едем реким рект-ом Loader'а к target'у КАК ЧАСТЬ основного таймлайна —
+  // значит fade/iris ниже стартуют только когда твин реально закончился,
+  // и ничего не будет видно "в полёте" сквозь открывающийся ирис.
+  .to(rectRef.current, {
+    left: () => handoffTarget!.left,
+    top: () => handoffTarget!.top,
+    width: () => handoffTarget!.width,
+    height: () => handoffTarget!.height,
+    duration: 0.6,
+    ease: "power3.inOut",
+  })
+  .to(contentRef.current, { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, "-=0.15")
+  .to(hudRef.current, { opacity: 0, duration: 0.25, ease: "power2.in" }, "<")
+  .to(iris, {
+    radius: 0,
+    duration: 0.85,
+    ease: "power4.inOut",
+    onUpdate: () => {
+      if (overlayRef.current) {
+        const { x, y } = irisOriginRef.current;
+        overlayRef.current.style.clipPath = `circle(${iris.radius}% at ${x}% ${y}%)`;
+      }
+    },
+  });
 
     return () => {
       tl.kill();

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { useApp } from "@/context/LocaleContext";
 import { createSignalScopeAnimator } from "@/lib/signalScopeAnimator";
+import { registerSignalScopeHandoff } from "@/lib/signalScopeHandoff";
 
 /** Any page that wants to host the scope renders an empty marker element
  * carrying this attribute wherever the scope should sit on that page —
@@ -132,6 +133,27 @@ export function GlobalSignalScope() {
       themeObserver.disconnect();
     };
   }, []);
+
+// Loader зовёт это через triggerSignalScopeHandoff в момент, когда он
+// уже знает реальный hero-rect — то есть ДО того как его iris начнёт
+// открываться. Это позволяет этому канвасу быть уже полностью на месте
+// (rect + opacity) в момент, когда клип-path лоадера начинает его
+// раскрывать — раскрывается уже идентичная картинка (общий sim-clock),
+// поэтому визуально нечему "проявляться" или "исчезать".
+useEffect(() => {
+  return registerSignalScopeHandoff((rect) => {
+    if (hasRectRef.current) return; // важен только самый первый handoff
+    const root = rootRef.current;
+    if (!root) return;
+    rectRef.current = rect;
+    hasRectRef.current = true;
+    visibleRef.current = true;
+    // Снап, а не твин — в этот момент мы всё ещё под непрозрачным
+    // оверлеем Loader'а, смотреть тут пока не на что.
+    gsap.set(root, { opacity: 1 });
+  });
+}, []);
+
 
   // --- keep it aligned with its slot across viewport/breakpoint changes,
   //     without the "fly" animation (a resize isn't a navigation) -------
