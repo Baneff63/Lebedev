@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { useApp, useLocale } from "@/context/LocaleContext";
 import { createSignalScopeAnimator } from "@/lib/signalScopeAnimator";
+import { SIGNAL_SCOPE_SLOT_ATTR } from "@/components/effects/GlobalSignalScope";
 
 const STAGE_LABELS: Record<"ru" | "en", string[]> = {
   ru: ["калибровка входа", "прогрев преампов", "синхронизация", "финальная проверка"],
@@ -15,34 +16,32 @@ type Rect = { left: number; top: number; width: number; height: number };
 /**
  * Loading screen.
  *
- * The canvas visual is no longer a bespoke "ring" that only ever lived on
- * this overlay — it's the exact same drawing routine as the homepage
- * hero's `SignalScope` (`src/lib/signalScopeAnimator.ts`): the radial
- * spectrum ring + Lissajous scribble + HUD readout. Its intensity ramps
- * from 0 to 1 as loading progresses, so it visibly "wakes up" in step
- * with the counter, arriving at full strength exactly as loading
- * completes — which is also the moment it should look identical to the
- * real thing.
+ * The canvas visual is the exact same drawing routine as the persistent
+ * app-wide scope (`src/lib/signalScopeAnimator.ts` / `GlobalSignalScope.tsx`):
+ * the radial spectrum ring + Lissajous scribble + HUD readout, both now
+ * reading from one shared simulation clock so there's never a visible
+ * "jump" between what the Loader draws and what appears once it hands
+ * off. Its intensity ramps from 0 to 1 as loading progresses, so it
+ * visibly "wakes up" in step with the counter, arriving at full strength
+ * exactly as loading completes.
  *
  * HANDOFF, two cases:
  *
- * 1. Landing on the homepage on a wide-enough viewport: the real
- *    `SignalScope` (marked with `data-hero-signal-scope`) is already
- *    mounted underneath this overlay, quietly animating. Right before
- *    exit, the Loader measures that element's actual on-screen rect and
- *    redraws its own scope inside that exact rectangle (same size,
- *    same position). The final iris-reveal then collapses precisely
- *    around that rect's center, so what's revealed underneath is —
- *    visually — the same shape, in the same place, already moving. It
- *    reads as "the loading visual becomes the hero element", not two
- *    unrelated things swapping.
+ * 1. Landing on the homepage on a wide-enough viewport: the home page's
+ *    scope slot (marked with `data-signal-scope-slot` — see
+ *    SignalScope.tsx) is already present in the DOM. Right before exit,
+ *    the Loader measures that element's actual on-screen rect and
+ *    redraws its own scope inside that exact rectangle. The final
+ *    iris-reveal then collapses precisely around that rect's center, so
+ *    what's revealed underneath — GlobalSignalScope, already sitting at
+ *    that same slot from the moment `isLoaded` flips — reads as "the
+ *    loading visual becomes the real one", not two unrelated things
+ *    swapping.
  *
- * 2. Anywhere else (other routes, or no room for the hero's right-hand
- *    column): there's no real element to hand off to, so the Loader
- *    instead collapses into the small persistent signal dot in the
- *    header (`data-signal-dot`, next to the logo) — the same fallback
- *    used previously, now just wrapped around the richer scope visual
- *    instead of a plain ring.
+ * 2. Anywhere else (no slot on this route/viewport): there's no real
+ *    element to hand off to, so the Loader instead collapses into the
+ *    small persistent signal dot in the header (`data-signal-dot`, next
+ *    to the logo).
  */
 export function Loader() {
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -59,8 +58,8 @@ export function Loader() {
   // column would be, and gets swapped for the real element's rect right
   // before exit whenever that element exists.
   const rectRef = useRef<Rect>({ left: 0, top: 0, width: 0, height: 0 });
-  // Whether a real `[data-hero-signal-scope]` handoff target was found —
-  // decides which exit strategy (rect morph vs. header-dot collapse) runs.
+  // Whether a real slot element was found to hand off to — decides which
+  // exit strategy (rect morph vs. header-dot collapse) runs.
   const heroAnchorFoundRef = useRef(false);
   // Iris collapse origin, in viewport percentages.
   const irisOriginRef = useRef({ x: 50, y: 50 });
@@ -69,10 +68,10 @@ export function Loader() {
   const { locale } = useLocale();
 
   const setDefaultRect = (width: number, height: number) => {
-    // Roughly mirrors where SignalScope actually sits on a wide viewport
-    // (`inset-y-6 right-0 w-[36%]`), so even before we can measure the
-    // real element (or on routes that don't have it) the loader's scope
-    // sits in a plausible, consistent spot rather than dead-center.
+    // Roughly mirrors where the home page's scope slot actually sits on a
+    // wide viewport (`inset-y-6 right-0 w-[36%]`), so even before we can
+    // measure the real element the loader's scope sits in a plausible,
+    // consistent spot rather than dead-center.
     const w = Math.min(width * 0.36, 620);
     const h = Math.min(height * 0.7, 640);
     rectRef.current = {
@@ -170,12 +169,12 @@ export function Loader() {
       },
     })
       .to(progressRef.current, { scaleX: 1, duration: 1.7, ease: "power2.inOut" }, 0)
-      // Look for the real hero element to hand off to. If it exists,
+      // Look for the real slot element to hand off to. If it exists,
       // glide the scope's drawing rect from wherever it currently is
       // toward that element's exact on-screen box — so by the time the
       // iris opens, the loader's scope and the real one line up exactly.
       .add(() => {
-        const heroEl = document.querySelector<HTMLElement>("[data-hero-signal-scope]");
+        const heroEl = document.querySelector<HTMLElement>(`[${SIGNAL_SCOPE_SLOT_ATTR}]`);
         const from = { ...rectRef.current };
 
         if (heroEl) {
@@ -199,7 +198,7 @@ export function Loader() {
           }
         }
 
-        // Fallback: no real hero element on this route/viewport — collapse
+        // Fallback: no real slot element on this route/viewport — collapse
         // the whole scope down toward the header's small signal dot
         // instead, shrinking the rect itself so the visual reads as
         // condensing into that point rather than a mismatched swap.
@@ -228,7 +227,7 @@ export function Loader() {
       .to(hudRef.current, { opacity: 0, duration: 0.25, ease: "power2.in" }, "<")
       // Iris reveal: the visible circle of the overlay shrinks from full
       // screen coverage down to a vanishing point at the handoff target
-      // (the real hero scope, or the header dot) — like a CRT tube
+      // (the real slot element, or the header dot) — like a CRT tube
       // powering off, in reverse, aimed exactly at what's underneath.
       .to(iris, {
         radius: 0,
