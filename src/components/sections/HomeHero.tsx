@@ -7,44 +7,72 @@ import { useLocale, useApp } from "@/context/LocaleContext";
 import { Magnetic } from "@/components/ui/Magnetic";
 import { AmbientEqualizerField } from "@/components/effects/AmbientEqualizerField";
 
+// Every group of elements the entrance timeline animates, with how far
+// (in px) they start offset before settling into place.
+const ENTRANCE_GROUPS: { selector: string; y: number }[] = [
+  { selector: ".hh-eyebrow", y: 14 },
+  { selector: ".hh-line", y: 60 },
+  { selector: ".hh-sub", y: 18 },
+  { selector: ".hh-cta", y: 16 },
+];
+
 export function HomeHero() {
   const { t } = useLocale();
   const { isLoaded } = useApp();
   const ref = useRef<HTMLDivElement>(null);
 
   /*
-   * BUG FIX: this used to be `useEffect`. The hero markup is present in
-   * the DOM (fully visible, no hidden state of its own) from the very
-   * first render — it just happens to sit underneath the opaque Loader
-   * overlay while `isLoaded` is false. The entrance animation only runs
-   * once `isLoaded` flips to true, and it works by calling
-   * `gsap.from(...)`, which SETS the hidden/offset starting state itself
-   * the moment it runs, then animates from there.
+   * REAL ROOT CAUSE of "text shows, disappears, then animates in":
    *
-   * `useEffect` runs *after* the browser has already painted the commit
-   * that made this true. In that same commit, `isLoaded` becoming true
-   * also unmounts the Loader (see Providers.tsx: `{!isLoaded && <Loader/>}`).
-   * So the actual sequence was: Loader disappears → browser paints the
-   * hero in its plain, fully-visible, non-animated state (this is the
-   * "text appears immediately" the report described) → a frame later,
-   * `useEffect` finally runs, `gsap.from()` snaps every line to
-   * opacity:0/offset (the "then it disappears") → and only then does the
-   * actual entrance tween play.
+   * The previous fix (switching this effect from `useEffect` to
+   * `useLayoutEffect`) addressed a *timing* concern, but the actual bug
+   * lives one level up, in how the Loader reveals the page. Loader.tsx's
+   * exit isn't a hard cut — its overlay's `clip-path` shrinks from a huge
+   * circle down to nothing over ~0.85s, progressively uncovering whatever
+   * is underneath *while that's still happening*. `isLoaded` only flips
+   * to true in that timeline's `onComplete`, i.e. only once the circle
+   * has already fully closed.
    *
-   * `useLayoutEffect` runs synchronously right after the DOM is updated,
-   * before the browser paints anything. So the `gsap.from()` hidden state
-   * is already in place for the very first frame the Loader-free page is
-   * shown — there's nothing left to flash.
+   * So as long as this component only hid itself once `isLoaded` became
+   * true, it spent that entire 0.85s reveal sitting in its plain, fully
+   * visible, unanimated state — which is exactly what the shrinking
+   * circle was uncovering. Only after the reveal finished did
+   * `isLoaded` flip, at which point `gsap.from()` would snap everything
+   * back to hidden and replay the entrance — reading as "text appears
+   * (through the closing iris), disappears (gsap.from() resets it),
+   * then animates in for real".
+   *
+   * FIX: don't wait for `isLoaded` to hide anything. A separate effect
+   * below puts every entrance target into its hidden/offset state
+   * immediately on mount (before first paint, via `useLayoutEffect`,
+   * completely independent of `isLoaded`) — so by the time the Loader's
+   * iris starts revealing the page at all, there's nothing but empty
+   * space to reveal. Only the actual entrance tween (still gated on
+   * `isLoaded`, still a `useLayoutEffect`) makes any of this text
+   * visible for the first time, and it does so with `.to()` rather than
+   * `.from()` — continuing on from the already-hidden state instead of
+   * re-establishing it, so there's no extra "snap to hidden" step left
+   * to look like a second appearance.
    */
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    const ctx = gsap.context(() => {
+      ENTRANCE_GROUPS.forEach(({ selector, y }) => {
+        gsap.set(selector, { y, opacity: 0 });
+      });
+    }, ref);
+    return () => ctx.revert();
+  }, []);
+
   useLayoutEffect(() => {
     if (!isLoaded || !ref.current) return;
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-      tl.from(".hh-eyebrow", { y: 14, opacity: 0, duration: 0.6 })
-        .from(".hh-line", { y: 60, opacity: 0, duration: 0.9, stagger: 0.1 }, "-=0.3")
-        .from(".hh-sub", { y: 18, opacity: 0, duration: 0.7 }, "-=0.5")
-        .from(".hh-cta", { y: 16, opacity: 0, duration: 0.6, stagger: 0.08 }, "-=0.45");
+      tl.to(".hh-eyebrow", { y: 0, opacity: 1, duration: 0.6 })
+        .to(".hh-line", { y: 0, opacity: 1, duration: 0.9, stagger: 0.1 }, "-=0.3")
+        .to(".hh-sub", { y: 0, opacity: 1, duration: 0.7 }, "-=0.5")
+        .to(".hh-cta", { y: 0, opacity: 1, duration: 0.6, stagger: 0.08 }, "-=0.45");
     }, ref);
 
     return () => ctx.revert();
