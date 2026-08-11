@@ -5,29 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 4.5">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_01_08_2026_2_58_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_01_08_2026_2_58__Changes_.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/signalScopeHandoff.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/effects/GlobalEffects.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/effects/GlobalEffects.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/effects/GlobalSignalScope.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/effects/GlobalSignalScope.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/player/FixedPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/player/FixedPlayer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/StatCounter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/StatCounter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/PlayerContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PlayerContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/Loader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/Loader.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="TypeScript File" />
-      </list>
-    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -130,10 +116,7 @@
       <workItem from="1785744939353" duration="783000" />
       <workItem from="1785786836534" duration="666000" />
       <workItem from="1785808072547" duration="1599000" />
-      <workItem from="1785844930652" duration="1307000" />
-      <workItem from="1785866683969" duration="272000" />
-      <workItem from="1786152868720" duration="83000" />
-      <workItem from="1786321460105" duration="1047000" />
+      <workItem from="1785844930652" duration="1043000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -495,23 +478,7 @@
       <option name="project" value="LOCAL" />
       <updated>1785844998341</updated>
     </task>
-    <task id="LOCAL-00046" summary="patch 4.5">
-      <option name="closed" value="true" />
-      <created>1785846158980</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1785846158980</updated>
-    </task>
-    <task id="LOCAL-00047" summary="patch 4.5">
-      <option name="closed" value="true" />
-      <created>1785866783210</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1785866783210</updated>
-    </task>
-    <option name="localTasksCounter" value="48" />
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
