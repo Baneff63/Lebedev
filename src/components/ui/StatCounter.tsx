@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "@/lib/gsapScrollTrigger";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 type StatCounterProps = {
   target?: number;

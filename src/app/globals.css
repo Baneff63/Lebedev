@@ -308,16 +308,6 @@ body:has(.fixed-player) .studio-hud {
   bottom: calc(var(--player-height) + 1rem);
 }
 
-/* Home page renders no SiteFooterBar (HomeFinale replaces it), so the
-   footer-bar-height gap above doesn't apply there — this rule only fires
-   when home-scroll is active AND the player is still hidden. Written as
-   its own `:not(:has(...))` selector (rather than relying on source
-   order against the `.fixed-player` rule above) so priority between the
-   two never depends on where either rule happens to sit in the file. */
-body:has(.app-shell-main--scroll):not(:has(.fixed-player)) .studio-hud {
-  bottom: 1rem;
-}
-
 .admin-input {
   width: 100%;
   border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
@@ -464,72 +454,4 @@ body:has(.app-shell-main--scroll):not(:has(.fixed-player)) .studio-hud {
 .marquee-edge-fade {
   -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
   mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
-}
-
-/* ---------------------------------------------------------------------- */
-/* Patch addition: scrollable home page (hero → stats → portfolio → mail) */
-/* ---------------------------------------------------------------------- */
-
-/*
- * Every other page stays the fixed, no-scroll 100dvh app-shell (see the
- * base `.app-shell-main` rules above) — this is the one deliberate
- * exception, applied only on the home page (src/app/page.tsx). Declared
- * as an additive modifier class rather than editing `.app-shell-main`
- * itself, so nothing about the other routes' behavior changes.
- */
-.app-shell-main--scroll {
-  height: auto;
-  min-height: 100dvh;
-  overflow: visible;
-  /* No SiteFooterBar is rendered on home (HomeFinale replaces it), so
-     the footer-bar space the base rule reserves isn't needed here. */
-  padding-bottom: 0;
-}
-
-body:has(.fixed-player) .app-shell-main--scroll {
-  padding-bottom: var(--player-height);
-}
-
-@media (max-width: 767.98px) {
-  /* Overrides the general mobile `.app-shell-main` block above for the
-     scrollable variant specifically — same `!important` weight, later in
-     the cascade, so this wins for elements carrying both classes. */
-  .app-shell-main--scroll {
-    height: auto !important;
-    min-height: 100dvh !important;
-    overflow: visible !important;
-    padding-bottom: 0 !important;
-  }
-
-  body:has(.fixed-player) .app-shell-main--scroll {
-    padding-bottom: calc(var(--player-height) + 1rem) !important;
-  }
-}
-
-/* Giant mailto link in HomeFinale — an underline that draws itself in on
-   hover/focus, matching the same "underline grows from the left" motif
-   already used for nav links (see .nav-link above) but sized for a
-   display-scale heading rather than an 11px nav label. */
-.home-mail-link {
-  position: relative;
-  font-family: var(--font-display);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
-  font-size: clamp(2.1rem, 8vw, 6.5rem);
-  word-break: break-word;
-}
-
-.home-mail-link .mail-underline {
-  display: block;
-  margin-top: 0.08em;
-  height: 2px;
-  transform: scaleX(0);
-  transform-origin: left;
-  background: var(--accent);
-  transition: transform 0.6s var(--ease-out-expo);
-}
-
-.home-mail-link:hover .mail-underline,
-.home-mail-link:focus-visible .mail-underline {
-  transform: scaleX(1);
 }

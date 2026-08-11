@@ -41,7 +41,6 @@ export function FixedPlayer() {
     tracks,
     currentTrack,
     isPlaying,
-    hasStarted,
     currentTime,
     duration,
     volume,
@@ -53,11 +52,7 @@ export function FixedPlayer() {
   } = usePlayer();
   const { locale } = useLocale();
 
-  // Hidden until the user has actually pressed play at least once — see
-  // hasStarted in PlayerContext.tsx. Was previously shown as soon as any
-  // tracks existed, which meant it sat at the bottom of every page (and
-  // ate into the page's usable height) before anyone had asked for it.
-  if (!tracks.length || !hasStarted) return null;
+  if (!tracks.length) return null;
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 

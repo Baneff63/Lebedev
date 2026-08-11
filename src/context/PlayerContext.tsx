@@ -20,12 +20,6 @@ type PlayerContextValue = {
   currentTime: number;
   duration: number;
   volume: number;
-  /** True once the user has started playback at least once this
-   * session. FixedPlayer stays hidden until this flips — see
-   * FixedPlayer.tsx. Deliberately "ever started", not "isPlaying": the
-   * bar should stay visible (with a paused state) if the user pauses,
-   * not disappear again. */
-  hasStarted: boolean;
   toggle: () => void;
   play: () => void;
   pause: () => void;
@@ -58,7 +52,6 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.85);
@@ -67,7 +60,6 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
-    if (isPlaying) setHasStarted(true);
   }, [isPlaying]);
 
   useEffect(() => {
@@ -221,7 +213,6 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       currentTrack,
       currentIndex: safeIndex,
       isPlaying,
-      hasStarted,
       currentTime,
       duration,
       volume,
@@ -240,7 +231,6 @@ export function PlayerProvider({ tracks, children }: PlayerProviderProps) {
       currentTrack,
       safeIndex,
       isPlaying,
-      hasStarted,
       currentTime,
       duration,
       volume,

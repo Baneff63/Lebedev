@@ -6,7 +6,6 @@ import gsap from "gsap";
 import { useApp } from "@/context/LocaleContext";
 import { createSignalScopeAnimator } from "@/lib/signalScopeAnimator";
 import { registerSignalScopeHandoff } from "@/lib/signalScopeHandoff";
-import { isSignalScopeLiveMode } from "@/lib/signalScopeScrollMode";
 
 /** Any page that wants to host the scope renders an empty marker element
  * carrying this attribute wherever the scope should sit on that page —
@@ -27,27 +26,6 @@ function measureSlot(): Rect | null {
   // exactly like "no slot at all", not left showing at a stale position.
   if (box.width < 4 || box.height < 4) return null;
   return { left: box.left, top: box.top, width: box.width, height: box.height };
-}
-
-/**
- * Home-only variant of `measureSlot()`: the home page can render MORE
- * THAN ONE `[data-signal-scope-slot]` marker (one in the hero, one in
- * the finale section further down — see HomeFinale.tsx), one per
- * "chapter" of the scroll story. This walks them in DOM order and
- * returns the first one that's actually inside the viewport right now —
- * i.e. whichever chapter the user has currently scrolled to. Used every
- * frame while `isSignalScopeLiveMode()` is on, so the canvas rides along
- * with the page instead of only jumping once per route change.
- */
-function pickLiveSlotRect(): Rect | null {
-  const slots = document.querySelectorAll<HTMLElement>(SLOT_SELECTOR);
-  for (const slot of Array.from(slots)) {
-    const box = slot.getBoundingClientRect();
-    if (box.width < 4 || box.height < 4) continue;
-    if (box.bottom <= 0 || box.top >= window.innerHeight) continue;
-    return { left: box.left, top: box.top, width: box.width, height: box.height };
-  }
-  return null;
 }
 
 /**
@@ -80,16 +58,6 @@ function pickLiveSlotRect(): Rect | null {
  * somewhere stale; if a later page/viewport has one again, it fades back
  * in at the new spot instead of visibly crossing the screen from an
  * unrelated previous location.
- *
- * LIVE SCROLL MODE (home page only, see signalScopeScrollMode.ts): while
- * `isSignalScopeLiveMode()` is on, every draw frame re-measures whichever
- * slot is currently visible (via `pickLiveSlotRect()`, above) and writes
- * straight into `rectRef.current` with no easing — it has to track the
- * document's actual scroll position 1:1, a tween would lag visibly
- * behind the user's scroll. This intentionally bypasses the tween-based
- * "fly between pages" logic below, which only ever runs on a pathname
- * change and is unaffected — the two modes are mutually exclusive by
- * page (home = live mode, every other route = route-change tween).
  */
 export function GlobalSignalScope() {
   const pathname = usePathname();
@@ -136,38 +104,6 @@ export function GlobalSignalScope() {
 
     const tick = () => {
       raf = requestAnimationFrame(tick);
-
-      // Live scroll-follow (home page only) — takes over rect/visibility
-      // management from the pathname-triggered tween below.
-      if (isSignalScopeLiveMode()) {
-        const active = pickLiveSlotRect();
-        if (active) {
-          rectRef.current = active;
-          hasRectRef.current = true;
-          if (!visibleRef.current) {
-            visibleRef.current = true;
-            if (rootRef.current) {
-              gsap.to(rootRef.current, {
-                opacity: 1,
-                duration: 0.3,
-                ease: "power2.out",
-                overwrite: "auto",
-              });
-            }
-          }
-        } else if (visibleRef.current) {
-          visibleRef.current = false;
-          if (rootRef.current) {
-            gsap.to(rootRef.current, {
-              opacity: 0,
-              duration: 0.3,
-              ease: "power2.out",
-              overwrite: "auto",
-            });
-          }
-        }
-      }
-
       if (!visibleRef.current) return;
 
       const rect = rectRef.current;
@@ -223,9 +159,6 @@ useEffect(() => {
   //     without the "fly" animation (a resize isn't a navigation) -------
   useEffect(() => {
     const onResize = () => {
-      // Live mode re-measures every frame anyway, no separate handling needed.
-      if (isSignalScopeLiveMode()) return;
-
       const root = rootRef.current;
       if (!root || !hasRectRef.current) return;
 

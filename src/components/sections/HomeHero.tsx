@@ -125,16 +125,6 @@ export function HomeHero() {
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-5">
-          {/*
-            IMPORTANT: the GSAP entrance animation (".hero-cta") lives on
-            THIS plain wrapper div, not on the Magnetic component itself.
-            Magnetic writes to its own inner div's `transform` on every
-            mousemove/mouseleave — if the GSAP-animated class had been on
-            that same node, the two systems would fight over the same
-            inline `transform`, leaving the button visually offset until
-            a hover event overwrote it. Keeping them on separate DOM
-            nodes avoids the conflict entirely.
-          */}
           <div className="hh-cta">
             <Magnetic strength={0.2}>
               <Link
@@ -160,16 +150,6 @@ export function HomeHero() {
             </span>
             {t.hero.ctaSecondary}
           </Link>
-        </div>
-
-        {/* Scroll cue — the page is now scrollable end-to-end (see
-            src/app/page.tsx), this is the only hint of that. Reuses the
-            existing ".hh-cta" entrance group instead of adding a new
-            animated selector, so it fades in with the rest of the CTA
-            row for free. Purely a static line + label, no extra JS. */}
-        <div className="hh-cta mt-14 hidden items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-muted/50 md:flex">
-          <span className="h-px w-8 bg-accent/40" aria-hidden />
-          {t.hud.scroll}
         </div>
       </div>
 
