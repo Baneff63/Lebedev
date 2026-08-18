@@ -125,6 +125,16 @@ export function HomeHero() {
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-5">
+          {/*
+            IMPORTANT: the GSAP entrance animation (".hero-cta") lives on
+            THIS plain wrapper div, not on the Magnetic component itself.
+            Magnetic writes to its own inner div's `transform` on every
+            mousemove/mouseleave — if the GSAP-animated class had been on
+            that same node, the two systems would fight over the same
+            inline `transform`, leaving the button visually offset until
+            a hover event overwrote it. Keeping them on separate DOM
+            nodes avoids the conflict entirely.
+          */}
           <div className="hh-cta">
             <Magnetic strength={0.2}>
               <Link
