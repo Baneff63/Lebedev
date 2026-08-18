@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b82cae87-4c49-4c7e-b702-91f948b1c10c" name="Changes" comment="patch 4.5">
+      <change afterPath="$PROJECT_DIR$/src/lib/signalScopeHandoff.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sections/HomeHero.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/PlayerContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PlayerContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/effects/GlobalSignalScope.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/effects/GlobalSignalScope.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/Loader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/Loader.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,23 +39,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "H:/lebedev",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "npm.dev.executor": "Run",
-    "ts.external.directory.path": "H:\\lebedev\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;H:/lebedev/src/components/sections&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;H:\\lebedev\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="H:\lebedev\src\components\sections" />
@@ -118,8 +117,6 @@
       <workItem from="1785786836534" duration="666000" />
       <workItem from="1785808072547" duration="1599000" />
       <workItem from="1785844930652" duration="1043000" />
-      <workItem from="1786449641950" duration="308000" />
-      <workItem from="1787013832917" duration="341000" />
     </task>
     <task id="LOCAL-00001" summary="patch 2">
       <option name="closed" value="true" />
@@ -481,15 +478,7 @@
       <option name="project" value="LOCAL" />
       <updated>1785844998341</updated>
     </task>
-    <task id="LOCAL-00046" summary="patch 4.5">
-      <option name="closed" value="true" />
-      <created>1786449844873</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1786449844873</updated>
-    </task>
-    <option name="localTasksCounter" value="47" />
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
